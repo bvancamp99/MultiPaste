@@ -1,0 +1,43 @@
+private DataObject GetClipboardData()
+        {
+            DataObject dataObject; // stores clipboard data
+
+            // get data from the Clipboard
+            try
+            {
+                dataObject = Clipboard.GetDataObject() as DataObject;
+            }
+            // handle an anticipated exception if it's thrown
+            catch (System.Runtime.InteropServices.COMException ex)
+            {
+                const uint CLIPBRD_E_CANT_OPEN = 0x800401D0;
+                if ((uint)ex.ErrorCode != CLIPBRD_E_CANT_OPEN)
+                    throw;
+
+                return null;
+            }
+
+            // return if raw clipboard data is null
+            if (dataObject == null)
+                return null;
+
+            string[] formats; // stores supported formats of the clipboard data
+
+            // get formats supported by this DataObject
+            try
+            {
+                formats = dataObject.GetFormats(false);
+            }
+            // handle an anticipated exception if it's thrown
+            catch (OutOfMemoryException)
+            {
+                return null;
+            }
+
+            // return if there are no supported formats, i.e. no data to add
+            if (formats == null || formats.Length <= 0)
+                return null;
+
+            // if all checks were passed, we have a valid DataObject
+            return dataObject;
+        }

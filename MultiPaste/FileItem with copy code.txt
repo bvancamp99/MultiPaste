@@ -1,0 +1,200 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace MultiPaste
+{
+    class FileItem : ClipboardItem
+    {
+        public FileItem(MainWindow mainWindow, StringCollection oldDirs) : base(mainWindow, TypeEnum.FileDropList)
+        {
+            if (oldDirs == null || oldDirs.Count == 0) // ensure param is valid before continuing
+                return;
+
+            SetFilenames(oldDirs); // extract filenames from oldDirs and store in Filenames property
+
+            if (!SetVars()) // set KeyText, KeyDiff, and CharCount; if method returns false, the item shouldn't be added
+                return;
+
+            CopyFiles(oldDirs); // copy files from param dirs to new dirs
+
+            Add(); // add to ListBox, KeyTextCollection, and ClipboardDict, then append to the CLIPBOARD file
+        }
+
+        public FileItem(MainWindow mainWindow, StringCollection filenames, ushort keyDiff) : base(mainWindow, TypeEnum.FileDropList)
+        {
+            Filenames = filenames; // get filenames from param
+
+            SetVars(keyDiff); // set KeyText, KeyDiff, and CharCount
+
+            // add to ListBox, KeyTextCollection, and ClipboardDict
+            mainWindow.ListBox.Items.Insert(0, KeyText);
+            mainWindow.KeyTextCollection.Insert(0, KeyText);
+            mainWindow.ClipboardDict.Add(KeyText, this);
+        }
+
+        // static property that returns the directory of the Files folder
+        public static string FolderDir { get; } = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Files");
+
+        // store all filenames represented by this item
+        public StringCollection Filenames { get; private set; }
+
+        public override void Remove()
+        {
+            base.Remove(); // remove from ListBox, KeyTextCollection, ClipboardDict, and the CLIPBOARD file
+
+            // check for any existing FileItems in ClipboardDict and return if so
+            foreach (ClipboardItem clipboardItem in mainWindow.ClipboardDict.Values)
+            {
+                if (clipboardItem.Type == TypeEnum.FileDropList)
+                    return;
+            }
+
+            // recursively delete the Files folder if it exists
+            if (Directory.Exists(FolderDir))
+                Directory.Delete(FolderDir, true);
+        }
+
+        protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
+        {
+            if (duplicateKeyItem.Type != TypeEnum.FileDropList) // check for valid type
+                return false;
+
+            if (Filenames.Count != (duplicateKeyItem as FileItem).Filenames.Count) // check for equivalent item count
+                return false;
+
+            // check equivalency of each filename
+            for (int i = 0; i < Filenames.Count; i++)
+            {
+                if (Filenames[i] != (duplicateKeyItem as FileItem).Filenames[i])
+                    return false;
+            }
+
+            // test passed if this point is reached
+            return true;
+        }
+
+        protected override void SetKeyText()
+        {
+            // if 1 file was copied, originalText will store Filenames[0]
+            if (Filenames.Count == 1)
+                KeyText = "File: " + Filenames[0];
+            // else KeyText will store Filenames[0]'s filename + how many more files there are
+            else
+                KeyText = "Files: " + Filenames[0] + " + " + (Filenames.Count - 1) + " more";
+
+            // shorten KeyText to fit the character limit if needed
+            if (KeyText.Length > mainWindow.CharacterLimit)
+                KeyText = KeyText.Substring(0, mainWindow.CharacterLimit) + "...";
+        }
+
+        protected override void SetCharCount()
+        {
+            // CharCount = Type + length of KeyDiff + \r\n chars + length of Filenames.Count + \r\n chars
+            CharCount = sizeof(TypeEnum) + KeyDiff.ToString().Length + 2 + Filenames.Count.ToString().Length + 2;
+
+            // CharCount += length of each string in Filenames + \r\n chars
+            foreach (string filename in Filenames)
+                CharCount += filename.Length + 2;
+        }
+
+        protected override void AddToFile()
+        {
+            // append to the CLIPBOARD file; if file is missing, create a new one
+            using (StreamWriter streamWriter = new StreamWriter(ClipboardDir, true))
+            {
+                /* Order of writing to the clipboard file:
+                 * 1. Type
+                 * 2. KeyDiff
+                 * 3. # strings in Filenames
+                 * 4. Filenames
+                 */
+
+                // Type
+                streamWriter.Write((char)Type);
+
+                // KeyDiff
+                streamWriter.WriteLine(KeyDiff);
+
+                // # strings in Filenames
+                streamWriter.WriteLine(Filenames.Count);
+
+                // Filenames; no new line chars in a filename, so we can use WriteLine
+                foreach (string filename in Filenames)
+                    streamWriter.WriteLine(filename);
+            }
+        }
+
+        private void SetFilenames(StringCollection oldDirs)
+        {
+            Filenames = new StringCollection(); // init Filenames with def ctor
+
+            // store filename of each item to be copied
+            foreach (string dir in oldDirs)
+                Filenames.Add(Path.GetFileName(dir));
+        }
+
+        /// <summary>
+        /// Code credit goes to: https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
+        /// </summary>
+        /// <param name="sourceDirName"></param>
+        /// <param name="destDirName"></param>
+        private void DirectoryCopy(string sourceDirName, string destDirName)
+        {
+            // Get the subdirectories for the specified directory.
+            DirectoryInfo dir = new DirectoryInfo(sourceDirName);
+
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            // If the destination directory doesn't exist, create it.
+            if (!Directory.Exists(destDirName))
+            {
+                Directory.CreateDirectory(destDirName);
+            }
+
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string temppath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(temppath, false);
+            }
+
+            // recursively copy subdirs and their contents to new location
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                string temppath = Path.Combine(destDirName, subdir.Name);
+                DirectoryCopy(subdir.FullName, temppath);
+            }
+        }
+
+        private void CopyFiles(StringCollection oldDirs)
+        {
+            // if Files folder is missing, create new folder
+            if (!Directory.Exists(FolderDir))
+                Directory.CreateDirectory(FolderDir);
+
+            // copy each item to new dir
+            for (int i = 0; i < oldDirs.Count; i++)
+            {
+                // if item is a folder, recursively copy its contents
+                if (File.GetAttributes(oldDirs[i]).HasFlag(FileAttributes.Directory))
+                {
+                    // if a folder of the same name exists in the new dir, remove that folder
+                    if (Directory.Exists(Path.Combine(FolderDir, Filenames[i])))
+                        Directory.Delete(Path.Combine(FolderDir, Filenames[i]), true);
+
+                    // recursively copy contents of the oldDirs[i] folder
+                    DirectoryCopy(oldDirs[i], Path.Combine(FolderDir, Filenames[i]));
+                }
+                // else item is a file; bool is true to overwrite existing files
+                else
+                    File.Copy(oldDirs[i], Path.Combine(FolderDir, Filenames[i]), true);
+            }
+        }
+    }
+}

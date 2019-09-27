@@ -1,0 +1,164 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace MultiPaste
+{
+    class CustomItem : ClipboardItem
+    {
+        public CustomItem(MainWindow mainWindow, IDataObject dataObject) : base(mainWindow, TypeEnum.Custom)
+        {
+            DataObject = dataObject; // store IDataObject received from the Clipboard
+
+            // ensure dataObject is valid before continuing
+            if (DataObject == null)
+                return;
+
+            // set SupportedFormat using PasteData; item shouldn't be added if it returns false
+            if (!SetSupportedFormat())
+                return;
+
+            // set KeyText, KeyDiff, and CharCount; if it returns false, the item shouldn't be added
+            if (!SetVars())
+                return;
+
+            // create folder if it's missing
+            Directory.CreateDirectory(FolderDir);
+
+            // create file in the Unknown or Custom folder with DataObject if its data is serializable
+            if (DataObject.GetData(SupportedFormat).GetType().IsSerializable)
+            {
+                using (var fileStream = File.Create(Path.Combine(FolderDir, KeyText)))
+                    new BinaryFormatter().Serialize(fileStream, DataObject.GetData(SupportedFormat));
+
+                // add to ListBox, KeyTextCollection, and ClipboardDict, then append to the CLIPBOARD file
+                Add();
+            }
+            // else add to everything excluding the CLIPBOARD and data files
+            else
+            {
+                // add to ListBox, KeyTextCollection, and ClipboardDict
+                mainWindow.ListBox.Items.Insert(0, KeyText);
+                mainWindow.KeyTextCollection.Insert(0, KeyText);
+                mainWindow.ClipboardDict.Add(KeyText, this);
+            }
+        }
+
+        public CustomItem(MainWindow mainWindow, IDataObject dataObject, string supportedFormat, ushort keyDiff)
+            : base(mainWindow, TypeEnum.Custom)
+        {
+            // store the parameter vars
+            DataObject = dataObject;
+            SupportedFormat = supportedFormat;
+
+            SetVars(keyDiff); // set KeyText, KeyDiff, and CharCount
+
+            // add to ListBox, KeyTextCollection, and ClipboardDict
+            mainWindow.ListBox.Items.Insert(0, KeyText);
+            mainWindow.KeyTextCollection.Insert(0, KeyText);
+            mainWindow.ClipboardDict.Add(KeyText, this);
+        }
+
+        // static property that returns the directory of the Images folder
+        public static string FolderDir { get; } = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Custom");
+
+        // store the IDataObject received from the Clipboard that holds the paste data
+        public IDataObject DataObject { get; }
+
+        // store format whose data ideally can be written to the CLIPBOARD file
+        public string SupportedFormat { get; private set; }
+
+        public override void Remove()
+        {
+            base.Remove(); // remove from ListBox, KeyTextCollection, ClipboardDict, and the CLIPBOARD file
+
+            // if Custom folder is missing, create new folder
+            if (!Directory.Exists(FolderDir))
+                Directory.CreateDirectory(FolderDir);
+            // else delete the item's custom file if it exists
+            else
+                File.Delete(Path.Combine(FolderDir, KeyText));
+        }
+
+        protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
+        {
+            // TODO: issues comparing equivalent data strings
+
+            string s1 = DataObject.GetData(SupportedFormat) as string;
+            string s2 = (duplicateKeyItem as CustomItem).DataObject.GetData((duplicateKeyItem as CustomItem).SupportedFormat) as string;
+
+            // items are equivalent if they are the same type, have the same supported formats, and have the same data as string
+            return duplicateKeyItem.Type == TypeEnum.Custom
+                && DataObject.GetFormats().SequenceEqual((duplicateKeyItem as CustomItem).DataObject.GetFormats())
+                && DataObject.GetData(SupportedFormat) as string ==
+                (duplicateKeyItem as CustomItem).DataObject.GetData((duplicateKeyItem as CustomItem).SupportedFormat) as string;
+        }
+
+        protected override void SetKeyText()
+        {
+            KeyText = "Custom (" + SupportedFormat + ")"; // set KeyText using the format we're using for PasteData
+
+            // if the data isn't serializable, we should inform the user
+            if (!DataObject.GetData(SupportedFormat).GetType().IsSerializable)
+                KeyText += " NOTE: this data can't be saved to a file";
+        }
+
+        protected override void SetCharCount()
+        {
+            // CharCount = Type + length of KeyDiff + \r\n chars + length of file dir + \r\n chars
+            CharCount = sizeof(TypeEnum) + KeyDiff.ToString().Length + 2 + Path.Combine(FolderDir, KeyText).Length + 2;
+        }
+
+        protected override void AddToFile()
+        {
+            // append to the CLIPBOARD file; if file is missing, create a new one
+            using (StreamWriter streamWriter = new StreamWriter(ClipboardDir, true))
+            {
+                /* Order of writing to the clipboard file:
+                 * 1. Type
+                 * 2. KeyDiff
+                 * 3. fileDir
+                 */
+
+                // Type
+                streamWriter.Write((char)Type);
+
+                // KeyDiff
+                streamWriter.WriteLine(KeyDiff);
+
+                // fileDir; file names shouldn't have new line chars so we can use WriteLine and don't need a var storing size
+                streamWriter.WriteLine(Path.Combine(FolderDir, KeyText));
+            }
+        }
+
+        private bool SetSupportedFormat()
+        {
+            string[] formats = DataObject.GetFormats(); // store supported formats of dataObject
+
+            // ensure formats is a valid array before continuing
+            if (formats.Length == 0)
+                return false;
+
+            foreach (string format in formats)
+            {
+                // store the first format whose data is serializable
+                if (DataObject.GetData(format).GetType().IsSerializable)
+                {
+                    SupportedFormat = format;
+                    return true;
+                }
+            }
+
+            // no formats have data that is serializable; make supportedFormats the first index string of Formats
+            SupportedFormat = formats[0];
+
+            return true; // we can work with the selected format at this point, but we won't be able to write it to a file
+        }
+    }
+}
