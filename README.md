@@ -8,7 +8,7 @@
 The latest release can be found in the <a href="https://github.com/bvancamp99/MultiPaste/releases">releases</a> section of the MultiPaste repository.
 
 <h2> Additional credits </h2>
-- Alex (https://github.com/Alex78904565), who has assisted in the early obstacles of this program. <br></br>
+<a href="https://github.com/Alex78904565">Alex G</a>, who has assisted in the early obstacles of this program. <br></br>
 
 <h3> Working on </h2>
 - 
