@@ -1,8 +1,10 @@
 ﻿<h1> MultiPaste </h1>
-- A free, enhanced clipboard manager for Windows <br></br>
-- Supports text, files, raw images, audio, and even custom formats! <br></br>
-- Remembers what you copied even after closing and reopening MultiPaste <br></br>
-- Support for drag-and-drop on text, files, and image links!
+ <ul>
+  <li>A free, enhanced clipboard manager for Windows</li>
+  <li>Supports text, files, raw images, audio, and even custom formats!</li>
+  <li>Remembers what you copied even after closing and reopening MultiPaste</li>
+  <li>Support for drag-and-drop on text, files, and image links!</li>
+</ul>
 
 <h2> Releases </h2>
 The latest release can be found in the <a href="https://github.com/bvancamp99/MultiPaste/releases">releases</a> section of the MultiPaste repository.
@@ -11,7 +13,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 <a href="https://github.com/Alex78904565">Alex78904565</a>, who has assisted in the early obstacles of this program.
 
 <h3> Fix </h2>
-<ul style="list-style-type:circle;">
+<ul>
   <li>AudioItem is implemented, but a method of testing it is yet to be found.  Stream.Length might serve as a problem, since its documentation seems to imply that it's only supported in derived classes that use Length.</li>
 </ul>
 
@@ -23,7 +25,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 </ul>
 
 <h3> Add </h2>
-<ul style="list-style-type:none;">
+<ul>
   <li>Search algorithm!</li>
   <li>Drag-and-drop support for raw images</li>
   <li>If copying an image, give user the option to paste as a file or image</li>
