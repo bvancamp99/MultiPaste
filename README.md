@@ -11,17 +11,23 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 <a href="https://github.com/Alex78904565">Alex78904565</a>, who has assisted in the early obstacles of this program.
 
 <h3> Fix </h2>
-- AudioItem is implemented, but a method of testing it is yet to be found.  Stream.Length might serve as a problem, since its documentation seems to imply that it's only supported in derived classes that use Length.
+<ul style="list-style-type:circle;">
+  <li>AudioItem is implemented, but a method of testing it is yet to be found.  Stream.Length might serve as a problem, since its documentation seems to imply that it's only supported in derived classes that use Length.</li>
+</ul>
 
 <h3> Improve </h2>
-- ImageItem.IsEquivalent <br></br>
-- CustomItem.IsEquivalent <br></br>
-- Keep menuStrip open when a toggle check item is clicked.
+<ul style="list-style-type:circle;">
+  <li>ImageItem.IsEquivalent</li>
+  <li>CustomItem.IsEquivalent</li>
+  <li>Keep menuStrip open when a toggle check item is clicked.</li>
+</ul>
 
 <h3> Add </h2>
-- Search algorithm! <br></br>
-- Drag-and-drop support for raw images <br></br>
-- If copying an image, give user the option to paste as a file or image <br></br>
-- Sync support via peer-to-peer relay server <br></br>
-- An improved look for the program icon <br></br>
-- Support for storing image as its original format.
+<ul style="list-style-type:circle;">
+  <li>Search algorithm!</li>
+  <li>Drag-and-drop support for raw images</li>
+  <li>If copying an image, give user the option to paste as a file or image</li>
+  <li>Sync support via peer-to-peer relay server</li>
+  <li>An improved look for the program icon</li>
+  <li>Support for storing image as its original format</li>
+</ul>
