@@ -10,9 +10,6 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 <h2> Additional credits </h2>
 <a href="https://github.com/Alex78904565">Alex78904565</a>, who has assisted in the early obstacles of this program. <br></br>
 
-<h3> Working on </h2>
-- 
-
 <h3> Fix </h2>
 - AudioItem is implemented, but a method of testing it is yet to be found.  Stream.Length might serve as a problem, since its documentation seems to imply that it's only supported in derived classes that use Length. <br></br>
 
