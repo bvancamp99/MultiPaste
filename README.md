@@ -5,7 +5,7 @@
 - Support for drag-and-drop on text, files, and image links! <br></br>
 
 <h2> Releases </h2>
-The latest release can be found in the [releases](https://github.com/bvancamp99/MultiPaste/releases) section of the MultiPaste repository.
+The latest release can be found in the <a href="https://github.com/bvancamp99/MultiPaste/releases">releases</a> section of the MultiPaste repository.
 
 <h2> Additional credits </h2>
 - Alex (https://github.com/Alex78904565), who has assisted in the early obstacles of this program. <br></br>
