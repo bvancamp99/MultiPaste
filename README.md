@@ -23,7 +23,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 </ul>
 
 <h3> Add </h2>
-<ul style="list-style-type:disc;">
+<ul style="list-style-type:none;">
   <li>Search algorithm!</li>
   <li>Drag-and-drop support for raw images</li>
   <li>If copying an image, give user the option to paste as a file or image</li>
