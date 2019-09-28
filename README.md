@@ -16,7 +16,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 </ul>
 
 <h3> Improve </h2>
-<ul style="list-style-type:circle;">
+<ul>
   <li>ImageItem.IsEquivalent</li>
   <li>CustomItem.IsEquivalent</li>
   <li>Keep menuStrip open when a toggle check item is clicked.</li>
