@@ -4,15 +4,11 @@
 - Remembers what you copied even after closing and reopening MultiPaste <br></br>
 - Support for drag-and-drop on text, files, and image links!
 
-<br></br>
-
 <h2> Releases </h2>
 The latest release can be found in the <a href="https://github.com/bvancamp99/MultiPaste/releases">releases</a> section of the MultiPaste repository.
 
 <h2> Additional credits </h2>
 <a href="https://github.com/Alex78904565">Alex78904565</a>, who has assisted in the early obstacles of this program.
-
-<br></br>
 
 <h3> Fix </h2>
 - AudioItem is implemented, but a method of testing it is yet to be found.  Stream.Length might serve as a problem, since its documentation seems to imply that it's only supported in derived classes that use Length.
