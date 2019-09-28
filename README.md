@@ -23,5 +23,5 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 - Drag-and-drop support for raw images <br></br>
 - If copying an image, give user the option to paste as a file or image <br></br>
 - Sync support via peer-to-peer relay server <br></br>
-- Create a more original icon.  Also find a way to show that icon in the start menu on laptop <br></br>
+- An improved look for the program icon <br></br>
 - Support for storing image as its original format. <br></br>
