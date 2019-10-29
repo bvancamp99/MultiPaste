@@ -12,20 +12,21 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 <h2> Additional credits </h2>
 <a href="https://github.com/Alex78904565">Alex78904565</a>, who has assisted in the early obstacles of this program.
 
-<h3> Fix </h2>
+<h3> Fix </h3>
 <ul>
   <li>AudioItem is implemented, but a method of testing it is yet to be found.  Stream.Length might serve as a problem, since its documentation seems to imply that it's only supported in derived classes that use Length.</li>
 </ul>
 
-<h3> Improve </h2>
+<h3> Improve </h3>
 <ul>
   <li>ImageItem.IsEquivalent</li>
   <li>CustomItem.IsEquivalent</li>
   <li>Keep menuStrip open when a toggle check item is clicked.</li>
 </ul>
 
-<h3> Add </h2>
+<h3> Add </h3>
 <ul>
+  <li>Ability to pin items to the top</li>
   <li>Search algorithm!</li>
   <li>Drag-and-drop support for raw images</li>
   <li>If copying an image, give user the option to paste as a file or image</li>
