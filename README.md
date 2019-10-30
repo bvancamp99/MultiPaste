@@ -26,6 +26,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Add </h3>
 <ul>
+  <li>Copy item with ctrl+c</li>
   <li>Ability to pin items to the top</li>
   <li>Search algorithm!</li>
   <li>Drag-and-drop support for raw images</li>
