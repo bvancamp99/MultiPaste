@@ -19,7 +19,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Improve </h3>
 <ul>
-  <li>ImageItem.IsEquivalent</li>
+  <li>ImageItem.IsEquivalent - with experience, I think it would be better to replace with new image if same size</li>
   <li>CustomItem.IsEquivalent</li>
   <li>Keep menuStrip open when a toggle check item is clicked.</li>
 </ul>
