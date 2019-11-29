@@ -19,6 +19,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Improve </h3>
 <ul>
+  <li>Catch errors thrown and write to an error log file.  Could be like in CS 536's ErrMsg.java file, which has static methods fatal and warning.  If warning, write to error log and notify user.  If failure, prog would probably have to close, but the user can refer to the error log for details.</li>
   <li>Moving item to the top or bottom should set index to nearby item rather than to the top or bottom</li>
   <li>After copying item, move index to that of the copied item</li>
   <li>ImageItem.IsEquivalent - with experience, I think it would be better to replace with new image if same size</li>
