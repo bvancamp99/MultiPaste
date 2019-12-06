@@ -29,6 +29,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Add </h3>
 <ul>
+  <li>Ctrl+z support to undelete items.  Could implement by storing the item in a temp ClipboardItem variable before deleting.  Then if Ctrl+z is pressed, it pushes that item to the top of the list.
   <li>Copy item with ctrl+c</li>
   <li>Ability to pin items to the top</li>
   <li>Search algorithm!</li>
