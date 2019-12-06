@@ -19,6 +19,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Improve </h3>
 <ul>
+  <li>We're passing MainWindow instances in a lot of places.  Maybe we could instead make some of its methods static so that an instance isn't required to be sent to classes that use it.</li>
   <li>Catch errors thrown and write to an error log file.  Could be like in CS 536's ErrMsg.java file, which has static methods fatal and warning.  If warning, write to error log and notify user.  If failure, prog would probably have to close, but the user can refer to the error log for details.  Should display the error, along with line num of the CLIPBOARD file; maybe some additional things.</li>
   <li>Moving item to the top or bottom should set index to nearby item rather than to the top or bottom.  Maybe provide a config setting to let the user choose.</li>
   <li>After copying item, move index to that of the copied item</li>
@@ -29,7 +30,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Add </h3>
 <ul>
-  <li>Ctrl+z support to undelete items.  Could implement by storing the item in a temp ClipboardItem variable before deleting.  Then if Ctrl+z is pressed, it pushes that item to the top of the list.
+  <li>Ctrl+z support to undelete items.  Could implement by storing the item in a temp ClipboardItem variable before deleting.  Then if Ctrl+z is pressed, it pushes that item to the top of the list.</li>
   <li>Copy item with ctrl+c</li>
   <li>Ability to pin items to the top</li>
   <li>Search algorithm!</li>
