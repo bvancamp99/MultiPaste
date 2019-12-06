@@ -283,12 +283,11 @@ namespace MultiPaste
         private void WriteConfigFile()
         {
             // before writing, clear config or create new empty file if it was unexpectedly deleted
-            using (FileStream fileStream = new FileStream(Path.Combine(AppDomain.CurrentDomain.
-            BaseDirectory, CONFIG_FILENAME), FileMode.Create))
-            {
-                // write applicable bools to file
-                fileStream.WriteByte(Convert.ToByte(winStartupItem.Checked));
-            }
+            using FileStream fileStream = new FileStream(Path.Combine(AppDomain.CurrentDomain.
+                BaseDirectory, CONFIG_FILENAME), FileMode.Create);
+
+            // write applicable bools to file
+            fileStream.WriteByte(Convert.ToByte(winStartupItem.Checked));
         }
 
         private void RemoveItem(int index)
