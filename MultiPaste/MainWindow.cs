@@ -13,9 +13,10 @@ namespace MultiPaste
     public partial class MainWindow : Form
     {
         private const string CONFIG_FILENAME = "CONFIG"; // store name of config file
-        private const byte CHAR_LIMIT = 100; // store max number of characters that can be displayed as a key in the dictionary
-        private readonly Timer timer; // create a winforms timer that will be used for notifLabel
-        private readonly GlobalEventHook eventHook; // store custom multi-purpose event hook
+        //private const byte CHAR_LIMIT = 100; // store max number of characters that can be displayed as a key in the dictionary
+        private readonly LocalClipboard myClipboard; // the driver of the clipboard history function
+        private readonly MsgLabel msgLabel; // custom label that messages the user via Label and Timer
+        private readonly GlobalEventHook eventHook; // WndProc event hook to detect clipboard changes and user input
 
         public MainWindow()
         {
@@ -23,8 +24,9 @@ namespace MultiPaste
             InitializeComponent();
 
             // read from config file to get user config information
-            using (var fileStream = new FileStream(Path.Combine(AppDomain.CurrentDomain.
-                BaseDirectory, CONFIG_FILENAME), FileMode.OpenOrCreate))
+            var fileStream = new FileStream(Path.Combine(AppDomain.CurrentDomain.
+                BaseDirectory, CONFIG_FILENAME), FileMode.OpenOrCreate);
+            using (fileStream)
             {
                 // if length is 0, the file was probably removed or misplaced; set to default values
                 if (fileStream.Length == 0)
@@ -37,76 +39,56 @@ namespace MultiPaste
             // change properties depending on user config settings
             UpdateWindowsStartup();
 
-            // init clipboard dictionary
-            ClipboardDict = new Dictionary<string, ClipboardItem>();
+            //// init clipboard dictionary
+            //ClipboardDict = new Dictionary<string, ClipboardItem>();
 
-            // read from clipboard file and add each saved clipboard item
-            AddClipboardItemsFromFile();
+            //// read from clipboard file and add each saved clipboard item
+            //AddClipboardItemsFromFile();
 
-            // initialize the timer with its interval at 3 seconds
-            timer = new Timer
-            {
-                Interval = 3000
-            };
+            // init myClipboard, the driver of the clipboard history function
+            this.myClipboard = new LocalClipboard(this.listBox);
 
-            // clear notifLabel when the timer goes off, then stop the timer
-            timer.Tick += (sender, e) =>
-            {
-                notifLabel.Text = string.Empty;
-                timer.Stop();
-            };
+            // init msgLabel, used for messaging the user
+            this.msgLabel = new MsgLabel(this.notifLabel);
 
             // initialize custom event hook that will handle clipboard changes and keyboard input
-            eventHook = new GlobalEventHook(this);
+            this.eventHook = new GlobalEventHook(this);
         }
 
-        /// if true, clipboard change will be handled when detected
-        public bool HandleClipboard { get; private set; } = true;
+        ///// if true, clipboard change will be handled when detected
+        //public bool HandleClipboard { get; private set; } = true;
 
-        /// safely returns private const int CHAR_LIMIT
-        public byte CharacterLimit
-        {
-            get { return CHAR_LIMIT; }
-        }
+        ///// safely returns private const int CHAR_LIMIT
+        //public byte CharacterLimit
+        //{
+        //    get { return CHAR_LIMIT; }
+        //}
 
-        /// store all clipboard items' KeyTexts in a StringCollection
-        public StringCollection KeyTextCollection { get; } = new StringCollection();
+        ///// store all clipboard items' KeyTexts in a StringCollection
+        //public StringCollection KeyTextCollection { get; } = new StringCollection();
 
         /// safely returns private ListBox listBox
-        public ListBox ListBox
-        {
-            get { return listBox; }
-        }
+        //public ListBox ListBox
+        //{
+        //    get { return listBox; }
+        //}
 
-        /// store/retrieve clipboard data
-        internal Dictionary<string, ClipboardItem> ClipboardDict { get; }
+        ///// store/retrieve clipboard data
+        //internal Dictionary<string, ClipboardItem> ClipboardDict { get; }
 
-        public void NotifyUser(string notifText)
-        {
-            // stop the timer if it's currently running
-            if (timer.Enabled)
-                timer.Stop();
-
-            // set notifLabel's text to the param string
-            notifLabel.Text = notifText;
-
-            // begin the timer, which will clear notifLabel after 3 seconds
-            timer.Start();
-        }
-
-        public void HandleClipboardChange()
-        {
-            if (Clipboard.ContainsText())
-                new TextItem(this, Clipboard.GetText());
-            else if (Clipboard.ContainsFileDropList())
-                new FileItem(this, Clipboard.GetFileDropList());
-            else if (Clipboard.ContainsImage())
-                new ImageItem(this, Clipboard.GetImage());
-            else if (Clipboard.ContainsAudio())
-                new AudioItem(this, Clipboard.GetAudioStream());
-            else
-                new CustomItem(this, Clipboard.GetDataObject());
-        }
+        //public void HandleClipboardChange()
+        //{
+        //    if (Clipboard.ContainsText())
+        //        new TextItem(this, Clipboard.GetText());
+        //    else if (Clipboard.ContainsFileDropList())
+        //        new FileItem(this, Clipboard.GetFileDropList());
+        //    else if (Clipboard.ContainsImage())
+        //        new ImageItem(this, Clipboard.GetImage());
+        //    else if (Clipboard.ContainsAudio())
+        //        new AudioItem(this, Clipboard.GetAudioStream());
+        //    else
+        //        new CustomItem(this, Clipboard.GetDataObject());
+        //}
 
         private void MainWindow_DragEnter(object sender, DragEventArgs e)
         {
@@ -121,152 +103,152 @@ namespace MultiPaste
         private void MainWindow_DragDrop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.UnicodeText))
-                new TextItem(this, e.Data.GetData(DataFormats.UnicodeText) as string);
+                new TextItem(e.Data.GetData(DataFormats.UnicodeText) as string);
             else if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 StringCollection fileDropList = new StringCollection();
                 fileDropList.AddRange(e.Data.GetData(DataFormats.FileDrop) as string[]);
-                new FileItem(this, fileDropList);
+                new FileItem(fileDropList);
             }
         }
 
-        private void CopyToClipboard()
-        {
-            // check for valid SelectedIndex val before continuing
-            if (ListBox.SelectedIndex < 0)
-                return;
+        //private void CopyToClipboard()
+        //{
+        //    // check for valid SelectedIndex val before continuing
+        //    if (ListBox.SelectedIndex < 0)
+        //        return;
 
-            // clipboard will be changed in this method; we don't want it to be handled
-            HandleClipboard = false;
+        //    // clipboard will be changed in this method; we don't want it to be handled
+        //    HandleClipboard = false;
 
-            // store the selected item
-            ClipboardItem clipboardItem = ClipboardDict[KeyTextCollection[ListBox.SelectedIndex]];
+        //    // store the selected item
+        //    ClipboardItem clipboardItem = ClipboardDict[KeyTextCollection[ListBox.SelectedIndex]];
 
-            // store an error msg string that will notify the user if an error occurred
-            string errMsg = null;
+        //    // store an error msg string that will notify the user if an error occurred
+        //    string errMsg = null;
 
-            switch (clipboardItem.Type)
-            {
-                case ClipboardItem.TypeEnum.Text:
-                    Clipboard.SetText((clipboardItem as TextItem).Text);
-                    break;
+        //    switch (clipboardItem.Type)
+        //    {
+        //        case ClipboardItem.TypeEnum.Text:
+        //            Clipboard.SetText((clipboardItem as TextItem).Text);
+        //            break;
 
-                case ClipboardItem.TypeEnum.FileDropList:
-                    Clipboard.SetFileDropList((clipboardItem as FileItem).FileDropList);
-                    break;
+        //        case ClipboardItem.TypeEnum.FileDropList:
+        //            Clipboard.SetFileDropList((clipboardItem as FileItem).FileDropList);
+        //            break;
 
-                case ClipboardItem.TypeEnum.Image:
-                    if (File.Exists(Path.Combine(ImageItem.FolderDir, clipboardItem.KeyText)))
-                    {
-                        // store the image from the file
-                        Image image = Image.FromFile(Path.Combine(ImageItem.FolderDir, clipboardItem.KeyText));
+        //        case ClipboardItem.TypeEnum.Image:
+        //            if (File.Exists(Path.Combine(ImageItem.FolderDir, clipboardItem.KeyText)))
+        //            {
+        //                // store the image from the file
+        //                Image image = Image.FromFile(Path.Combine(ImageItem.FolderDir, clipboardItem.KeyText));
 
-                        // set image to the Windows clipboard
-                        Clipboard.SetImage(image);
+        //                // set image to the Windows clipboard
+        //                Clipboard.SetImage(image);
 
-                        // dispose the image to free up the file
-                        image.Dispose();
-                    }
-                    else
-                        errMsg = "Image file is missing!";
-                    break;
+        //                // dispose the image to free up the file
+        //                image.Dispose();
+        //            }
+        //            else
+        //                errMsg = "Image file is missing!";
+        //            break;
 
-                case ClipboardItem.TypeEnum.Audio:
-                    if (File.Exists(Path.Combine(AudioItem.FolderDir, clipboardItem.KeyText)))
-                    {
-                        // store audio stream from the file
-                        Stream audio = new MemoryStream(File.ReadAllBytes(Path.Combine
-                            (AudioItem.FolderDir, clipboardItem.KeyText)));
+        //        case ClipboardItem.TypeEnum.Audio:
+        //            if (File.Exists(Path.Combine(AudioItem.FolderDir, clipboardItem.KeyText)))
+        //            {
+        //                // store audio stream from the file
+        //                Stream audio = new MemoryStream(File.ReadAllBytes(Path.Combine
+        //                    (AudioItem.FolderDir, clipboardItem.KeyText)));
 
-                        // set audio to the Windows clipboard
-                        Clipboard.SetAudio(audio);
+        //                // set audio to the Windows clipboard
+        //                Clipboard.SetAudio(audio);
 
-                        // dispose the stream to free up the file
-                        audio.Dispose();
-                    }
-                    else
-                        errMsg = "Audio file is missing!";
-                    break;
+        //                // dispose the stream to free up the file
+        //                audio.Dispose();
+        //            }
+        //            else
+        //                errMsg = "Audio file is missing!";
+        //            break;
 
-                case ClipboardItem.TypeEnum.Custom:
-                    if (File.Exists(Path.Combine(CustomItem.FolderDir, clipboardItem.KeyText)))
-                    {
-                        // store custom data from the file
-                        object data;
-                        using (var stream = new FileStream(Path.Combine(CustomItem.FolderDir,
-                            clipboardItem.KeyText), FileMode.Open))
-                        {
-                            data = new BinaryFormatter().Deserialize(stream);
-                        }
+        //        case ClipboardItem.TypeEnum.Custom:
+        //            if (File.Exists(Path.Combine(CustomItem.FolderDir, clipboardItem.KeyText)))
+        //            {
+        //                // store custom data from the file
+        //                object data;
+        //                using (var stream = new FileStream(Path.Combine(CustomItem.FolderDir,
+        //                    clipboardItem.KeyText), FileMode.Open))
+        //                {
+        //                    data = new BinaryFormatter().Deserialize(stream);
+        //                }
 
-                        // set custom data to the Windows clipboard
-                        Clipboard.SetData((clipboardItem as CustomItem).WritableFormat, data);
-                    }
-                    else
-                        errMsg = "Custom file is missing!";
-                    break;
-            }
+        //                // set custom data to the Windows clipboard
+        //                Clipboard.SetData((clipboardItem as CustomItem).WritableFormat, data);
+        //            }
+        //            else
+        //                errMsg = "Custom file is missing!";
+        //            break;
+        //    }
 
-            // flip to true after algorithm is finished
-            HandleClipboard = true;
+        //    // flip to true after algorithm is finished
+        //    HandleClipboard = true;
 
-            // notify to the user the results of the operation attempt
-            if (errMsg == null)
-                NotifyUser("Copied to clipboard!");
-            else
-                NotifyUser(errMsg);
-        }
+        //    // notify to the user the results of the operation attempt
+        //    if (errMsg == null)
+        //        MsgLabel.Normal("Copied to clipboard!");
+        //    else
+        //        MsgLabel.Warn(errMsg);
+        //}
 
-        private void AddClipboardItemsFromFile()
-        {
-            // if CLIPBOARD file is missing or empty
-            if (!File.Exists(ClipboardItem.ClipboardDir) || new FileInfo(ClipboardItem.ClipboardDir).Length <= 0)
-                return;
+        //private void AddClipboardItemsFromFile()
+        //{
+        //    // if CLIPBOARD file is missing or empty
+        //    if (!File.Exists(ClipboardItem.ClipboardDir) || new FileInfo(ClipboardItem.ClipboardDir).Length <= 0)
+        //        return;
 
-            // if any data files are missing, this temp CLIPBOARD file will be updated
-            File.WriteAllText(ClipboardItem.TempClipDir, File.ReadAllText(ClipboardItem.ClipboardDir));
+        //    // if any data files are missing, this temp CLIPBOARD file will be updated
+        //    File.WriteAllText(ClipboardItem.TempClipDir, File.ReadAllText(ClipboardItem.ClipboardDir));
 
-            // traverse and store the contents of the file into new instances of ClipboardItem's derived classes
-            using (StreamReader streamReader = new StreamReader(ClipboardItem.ClipboardDir))
-            {
-                while (!streamReader.EndOfStream)
-                {
-                    // Type
-                    ClipboardItem.TypeEnum type = (ClipboardItem.TypeEnum)streamReader.Read();
+        //    // traverse and store the contents of the file into new instances of ClipboardItem's derived classes
+        //    using (StreamReader streamReader = new StreamReader(ClipboardItem.ClipboardDir))
+        //    {
+        //        while (!streamReader.EndOfStream)
+        //        {
+        //            // Type
+        //            ClipboardItem.TypeEnum type = (ClipboardItem.TypeEnum)streamReader.Read();
 
-                    // KeyDiff
-                    ushort keyDiff = ushort.Parse(streamReader.ReadLine());
+        //            // KeyDiff
+        //            ushort keyDiff = ushort.Parse(streamReader.ReadLine());
 
-                    // remaining operations depend on the type of item
-                    switch (type)
-                    {
-                        case ClipboardItem.TypeEnum.Text:
-                            new TextItem(this, keyDiff, streamReader);
-                            break;
+        //            // remaining operations depend on the type of item
+        //            switch (type)
+        //            {
+        //                case ClipboardItem.TypeEnum.Text:
+        //                    new TextItem(this, keyDiff, streamReader);
+        //                    break;
 
-                        case ClipboardItem.TypeEnum.FileDropList:
-                            new FileItem(this, keyDiff, streamReader);
-                            break;
+        //                case ClipboardItem.TypeEnum.FileDropList:
+        //                    new FileItem(this, keyDiff, streamReader);
+        //                    break;
 
-                        case ClipboardItem.TypeEnum.Image:
-                            new ImageItem(this, keyDiff, streamReader);
-                            break;
+        //                case ClipboardItem.TypeEnum.Image:
+        //                    new ImageItem(this, keyDiff, streamReader);
+        //                    break;
 
-                        case ClipboardItem.TypeEnum.Audio:
-                            new AudioItem(this, keyDiff, streamReader);
-                            break;
+        //                case ClipboardItem.TypeEnum.Audio:
+        //                    new AudioItem(this, keyDiff, streamReader);
+        //                    break;
 
-                        case ClipboardItem.TypeEnum.Custom:
-                            new CustomItem(this, keyDiff, streamReader);
-                            break;
-                    }
-                }
-            }
+        //                case ClipboardItem.TypeEnum.Custom:
+        //                    new CustomItem(this, keyDiff, streamReader);
+        //                    break;
+        //            }
+        //        }
+        //    }
 
-            // all items have been read from the file and added; replace CLIPBOARD file with the temp file
-            File.Delete(ClipboardItem.ClipboardDir);
-            File.Move(ClipboardItem.TempClipDir, ClipboardItem.ClipboardDir);
-        }
+        //    // all items have been read from the file and added; replace CLIPBOARD file with the temp file
+        //    File.Delete(ClipboardItem.ClipboardDir);
+        //    File.Move(ClipboardItem.TempClipDir, ClipboardItem.ClipboardDir);
+        //}
 
         private void UpdateWindowsStartup()
         {
@@ -282,202 +264,89 @@ namespace MultiPaste
 
         private void WriteConfigFile()
         {
-            // before writing, clear config or create new empty file if it was unexpectedly deleted
-            using FileStream fileStream = new FileStream(Path.Combine(AppDomain.CurrentDomain.
+            // init fileStream to write to file
+            var fileStream = new FileStream(Path.Combine(AppDomain.CurrentDomain.
                 BaseDirectory, CONFIG_FILENAME), FileMode.Create);
 
-            // write applicable bools to file
-            fileStream.WriteByte(Convert.ToByte(winStartupItem.Checked));
+            // before writing, clear config or create new empty file if it was unexpectedly deleted
+            using (fileStream)
+            {
+                // write applicable bools to file
+                fileStream.WriteByte(Convert.ToByte(winStartupItem.Checked));
+            }
         }
 
-        private void RemoveItem(int index)
-        {
-            // return if index is invalid
-            if (index < 0)
-                return;
+        //private void RemoveItem(int index)
+        //{
+        //    // return if index is invalid
+        //    if (index < 0)
+        //        return;
 
-            // remove the ListBox item located at the index
-            ClipboardDict[KeyTextCollection[index]].Remove();
+        //    // remove the ListBox item located at the index
+        //    ClipboardItem clipboardItem = ClipboardDict[KeyTextCollection[index]];
+        //    LocalClipboard.Remove(clipboardItem.KeyText, clipboardItem);
 
-            // if there was an item located after the removed item, select that item
-            if (ListBox.Items.Count > index)
-                ListBox.SelectedIndex = index;
-            // else select the item located before the removed item
-            else
-                ListBox.SelectedIndex = index - 1;
+        //    // if there was an item located after the removed item, select that item
+        //    if (ListBox.Items.Count > index)
+        //        ListBox.SelectedIndex = index;
+        //    // else select the item located before the removed item
+        //    else
+        //        ListBox.SelectedIndex = index - 1;
 
-            // notify the user of the successful operation for 3 seconds
-            NotifyUser("Item removed!");
-        }
+        //    // notify the user of the successful operation for 3 seconds
+        //    MsgLabel.Normal("Item removed!");
+        //}
 
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {
                 case Keys.Up:
-                    // if there is one item in ListBox, select that item
-                    if (ListBox.Items.Count == 1)
-                        ListBox.SelectedIndex = 0;
-                    // else determine actions on the selected index
-                    else if (ListBox.Items.Count > 1)
-                    {
-                        // store current index of the selected item
-                        int selectedIndex = ListBox.SelectedIndex;
-
-                        // if no item is selected, set selected index to 0 and leave
-                        if (selectedIndex < 0)
-                        {
-                            ListBox.SelectedIndex = 0;
-                            break;
-                        }
-
-                        // if shift key is also held, then we want to move the selected item
-                        if (e.Shift)
-                        {
-                            // move item to the top if ctrl key is being pressed
-                            if (e.Control)
-                            {
-                                if (selectedIndex > 0)
-                                {
-                                    ClipboardDict[KeyTextCollection[selectedIndex]].Move(0);
-                                    ListBox.SelectedIndex = 0;
-                                }
-                            }
-                            // else if selected index is 0, move selected item to last index
-                            else if (selectedIndex == 0)
-                            {
-                                ClipboardDict[KeyTextCollection[0]].Move(ListBox.Items.Count - 1);
-                                ListBox.SelectedIndex = ListBox.Items.Count - 1;
-                            }
-                            // else move item up one index
-                            else
-                            {
-                                ClipboardDict[KeyTextCollection[selectedIndex]].Move(selectedIndex - 1);
-                                ListBox.SelectedIndex = selectedIndex - 1;
-                            }
-                        }
-                        // else only change selected index
-                        else
-                        {
-                            // if selected item is at index 0, select bottom item
-                            if (ListBox.SelectedIndex <= 0)
-                                ListBox.SelectedIndex = ListBox.Items.Count - 1;
-                            // else select previous item
-                            else
-                                ListBox.SelectedIndex--;
-                        }
-                    }
+                    LocalClipboard.OnKeyUp(e);
                     break;
 
                 case Keys.Down:
-                    // if there is one item in ListBox, select that item
-                    if (ListBox.Items.Count == 1)
-                        ListBox.SelectedIndex = 0;
-                    // else determine actions on the selected index
-                    else if (ListBox.Items.Count > 1)
-                    {
-                        // store current index of the selected item
-                        int selectedIndex = ListBox.SelectedIndex;
-
-                        // if no item is selected, set selected index to 0 and leave
-                        if (selectedIndex < 0)
-                        {
-                            ListBox.SelectedIndex = 0;
-                            break;
-                        }
-
-                        // if shift key is also held, then we want to move the selected item
-                        if (e.Shift)
-                        {
-                            // move item to the bottom if ctrl key is being pressed
-                            if (e.Control)
-                            {
-                                if (selectedIndex < ListBox.Items.Count - 1)
-                                {
-                                    ClipboardDict[KeyTextCollection[selectedIndex]].Move(ListBox.Items.Count - 1);
-                                    ListBox.SelectedIndex = ListBox.Items.Count - 1;
-                                }
-                            }
-                            // else if index selected isn't the final index, move item down one index
-                            else if (ListBox.SelectedIndex < ListBox.Items.Count - 1)
-                            {
-                                ClipboardDict[KeyTextCollection[selectedIndex]].Move(selectedIndex + 1);
-                                ListBox.SelectedIndex = selectedIndex + 1;
-                            }
-                            // else move selected item to index 0
-                            else
-                            {
-                                ClipboardDict[KeyTextCollection[ListBox.Items.Count - 1]].Move(0);
-                                ListBox.SelectedIndex = 0;
-                            }
-                        }
-                        // else only change selected index
-                        else
-                        {
-                            // if selected item isn't the final index, select the next item
-                            if (ListBox.SelectedIndex < ListBox.Items.Count - 1)
-                                ListBox.SelectedIndex++;
-                            // else select item at index 0
-                            else
-                                ListBox.SelectedIndex = 0;
-                        }
-                    }
+                    LocalClipboard.OnKeyDown(e);
                     break;
 
                 case Keys.Enter:
                     // copy selected item to the Windows clipboard
-                    CopyToClipboard();
+                    LocalClipboard.Copy();
                     break;
 
                 case Keys.Delete:
                     // programmatically click the Remove button
-                    removeBtn.PerformClick();
+                    this.removeBtn.PerformClick();
                     break;
 
                 case Keys.Escape:
                     // minimize to the taskbar
-                    WindowState = FormWindowState.Minimized;
+                    this.WindowState = FormWindowState.Minimized;
                     break;
 
                 case Keys.F4:
                     // minimize to system tray on Alt + F4
                     if (e.Alt)
-                        Visible = false;
+                        this.Visible = false;
                     break;
             }
 
             e.Handled = true; // stop event handling chain
         }
 
-        private void MoveTopBtn_Click(object sender, EventArgs e)
-        {
-            // set focus away from the button
-            ListBox.Focus();
-
-            // return if SelectedIndex is invalid or if the item is already at the top
-            if (ListBox.SelectedIndex <= 0)
-                return;
-
-            // relocate the selected item to the top of ListBox
-            ClipboardDict[KeyTextCollection[ListBox.SelectedIndex]].Move(0);
-
-            // select the item that was moved to the top
-            ListBox.SelectedIndex = 0;
-        }
-
         private void ListBox_DoubleClick(object sender, EventArgs e)
         {
             // copy selected item to the Windows clipboard
-            CopyToClipboard();
+            LocalClipboard.Copy();
         }
 
         private void RemoveBtn_Click(object sender, EventArgs e)
         {
-            // set focus away from the button
-            ListBox.Focus();
+            // set focus back to the local clipboard
+            LocalClipboard.Focus();
 
-            // remove ListBox selected item
-            RemoveItem(ListBox.SelectedIndex);
+            // remove the current index of the local clipboard
+            LocalClipboard.Remove();
         }
 
         private void NotifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -497,94 +366,102 @@ namespace MultiPaste
 
         private void ClearItem_Click(object sender, EventArgs e)
         {
-            // clear ListBox, KeyTextCollection, and ClipboardDict
-            ListBox.Items.Clear();
-            KeyTextCollection.Clear();
-            ClipboardDict.Clear();
+            //// clear ListBox, KeyTextCollection, and ClipboardDict
+            //ListBox.Items.Clear();
+            //KeyTextCollection.Clear();
+            //ClipboardDict.Clear();
 
-            // delete the CLIPBOARD file
-            File.Delete(ClipboardItem.ClipboardDir);
+            //// delete the CLIPBOARD file
+            //string clipboardFile = LocalClipboard.GetClipboardFile();
+            //File.Delete(clipboardFile);
 
-            // recursively delete each item folder if it exists
-            if (Directory.Exists(ImageItem.FolderDir))
-                Directory.Delete(ImageItem.FolderDir, true);
-            if (Directory.Exists(AudioItem.FolderDir))
-                Directory.Delete(AudioItem.FolderDir, true);
-            if (Directory.Exists(CustomItem.FolderDir))
-                Directory.Delete(CustomItem.FolderDir, true);
+            //// recursively delete each item folder if it exists
+            //if (Directory.Exists(ImageItem.FolderDir))
+            //    Directory.Delete(ImageItem.FolderDir, true);
+            //if (Directory.Exists(AudioItem.FolderDir))
+            //    Directory.Delete(AudioItem.FolderDir, true);
+            //if (Directory.Exists(CustomItem.FolderDir))
+            //    Directory.Delete(CustomItem.FolderDir, true);
 
-            NotifyUser("All items cleared!");
+            //MsgLabel.Normal("All items cleared!");
+
+            LocalClipboard.Clear();
         }
 
-        private void UpdateDisplayedItems()
-        {
-            ListBox.Items.Clear(); // clear ListBox
+        //private void UpdateDisplayedItems()
+        //{
+        //    ListBox.Items.Clear(); // clear ListBox
 
-            foreach (string key in KeyTextCollection)
-            {
-                // add to ListBox if the item's data type is allowed
-                if ((dispTextItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.Text)
-                    || (dispFilesItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.FileDropList)
-                    || (dispImagesItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.Image)
-                    || (dispAudioItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.Audio)
-                    || (dispCustomItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.Custom))
-                    ListBox.Items.Add(key);
-            }
-        }
+        //    foreach (string key in KeyTextCollection)
+        //    {
+        //        // add to ListBox if the item's data type is allowed
+        //        if ((dispTextItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.Text)
+        //            || (dispFilesItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.FileDropList)
+        //            || (dispImagesItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.Image)
+        //            || (dispAudioItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.Audio)
+        //            || (dispCustomItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.Custom))
+        //            ListBox.Items.Add(key);
+        //    }
+        //}
 
         private void DispTextItem_Click(object sender, EventArgs e)
         {
-            UpdateDisplayedItems();
+            LocalClipboard.OnTypeRestrictionClick(this.dispTextItem, this.dispFilesItem,
+                this.dispImagesItem, this.dispAudioItem, this.dispCustomItem);
 
             // notify the user of the change
             if (dispTextItem.Checked)
-                NotifyUser("Text items displayed!");
+                MsgLabel.Normal("Text items displayed!");
             else
-                NotifyUser("Text items hidden!");
+                MsgLabel.Normal("Text items hidden!");
         }
 
         private void DispFilesItem_Click(object sender, EventArgs e)
         {
-            UpdateDisplayedItems();
+            LocalClipboard.OnTypeRestrictionClick(this.dispTextItem, this.dispFilesItem,
+                this.dispImagesItem, this.dispAudioItem, this.dispCustomItem);
 
             // notify the user of the change
             if (dispFilesItem.Checked)
-                NotifyUser("File items displayed!");
+                MsgLabel.Normal("File items displayed!");
             else
-                NotifyUser("File items hidden!");
+                MsgLabel.Normal("File items hidden!");
         }
 
         private void DispImagesItem_Click(object sender, EventArgs e)
         {
-            UpdateDisplayedItems();
+            LocalClipboard.OnTypeRestrictionClick(this.dispTextItem, this.dispFilesItem,
+                this.dispImagesItem, this.dispAudioItem, this.dispCustomItem);
 
             // notify the user of the change
             if (dispImagesItem.Checked)
-                NotifyUser("Image items displayed!");
+                MsgLabel.Normal("Image items displayed!");
             else
-                NotifyUser("Image items hidden!");
+                MsgLabel.Normal("Image items hidden!");
         }
 
         private void DispAudioItem_Click(object sender, EventArgs e)
         {
-            UpdateDisplayedItems();
+            LocalClipboard.OnTypeRestrictionClick(this.dispTextItem, this.dispFilesItem,
+                this.dispImagesItem, this.dispAudioItem, this.dispCustomItem);
 
             // notify the user of the change
             if (dispAudioItem.Checked)
-                NotifyUser("Audio items displayed!");
+                MsgLabel.Normal("Audio items displayed!");
             else
-                NotifyUser("Audio items hidden!");
+                MsgLabel.Normal("Audio items hidden!");
         }
 
         private void DispCustomItem_Click(object sender, EventArgs e)
         {
-            UpdateDisplayedItems();
+            LocalClipboard.OnTypeRestrictionClick(this.dispTextItem, this.dispFilesItem,
+                this.dispImagesItem, this.dispAudioItem, this.dispCustomItem);
 
             // notify the user of the change
             if (dispCustomItem.Checked)
-                NotifyUser("Custom items displayed!");
+                MsgLabel.Normal("Custom items displayed!");
             else
-                NotifyUser("Custom items hidden!");
+                MsgLabel.Normal("Custom items hidden!");
         }
 
         private void ExitItem_Click(object sender, EventArgs e)
@@ -604,7 +481,7 @@ namespace MultiPaste
         private void HelpItem_Click(object sender, EventArgs e)
         {
             // notify the user that we're attempting to open the help file
-            NotifyUser("Opening help.txt...");
+            MsgLabel.Normal("Opening help.txt...");
 
             // create or open help.txt and overwrite its contents
             File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "help.txt"),
@@ -634,7 +511,7 @@ namespace MultiPaste
             Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "help.txt"));
 
             // notify the user of the successful operation for 3 seconds
-            NotifyUser("help.txt is open!");
+            MsgLabel.Normal("help.txt is open!");
         }
     }
 }

@@ -32,25 +32,24 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileDropDown = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitItem = new System.Windows.Forms.ToolStripMenuItem();
             this.configDropDown = new System.Windows.Forms.ToolStripMenuItem();
-            this.winStartupItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.listBox = new System.Windows.Forms.ListBox();
-            this.moveTopBtn = new System.Windows.Forms.Button();
-            this.removeBtn = new System.Windows.Forms.Button();
-            this.notifLabel = new System.Windows.Forms.Label();
-            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
-            this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dispDropDown = new System.Windows.Forms.ToolStripMenuItem();
             this.dispTextItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dispFilesItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dispImagesItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dispAudioItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dispCustomItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.helpItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.winStartupItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.listBox = new System.Windows.Forms.ListBox();
+            this.removeBtn = new System.Windows.Forms.Button();
+            this.notifLabel = new System.Windows.Forms.Label();
+            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -63,8 +62,7 @@
             this.configDropDown});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Padding = new System.Windows.Forms.Padding(4, 1, 0, 1);
-            this.menuStrip.Size = new System.Drawing.Size(406, 24);
+            this.menuStrip.Size = new System.Drawing.Size(609, 33);
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "menuStrip";
             // 
@@ -75,13 +73,21 @@
             this.clearItem,
             this.exitItem});
             this.fileDropDown.Name = "fileDropDown";
-            this.fileDropDown.Size = new System.Drawing.Size(37, 22);
+            this.fileDropDown.Size = new System.Drawing.Size(54, 29);
             this.fileDropDown.Text = "File";
+            // 
+            // helpItem
+            // 
+            this.helpItem.Name = "helpItem";
+            this.helpItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.H)));
+            this.helpItem.Size = new System.Drawing.Size(289, 34);
+            this.helpItem.Text = "Help";
+            this.helpItem.Click += new System.EventHandler(this.HelpItem_Click);
             // 
             // clearItem
             // 
             this.clearItem.Name = "clearItem";
-            this.clearItem.Size = new System.Drawing.Size(191, 22);
+            this.clearItem.Size = new System.Drawing.Size(289, 34);
             this.clearItem.Text = "Clear All Copied Items";
             this.clearItem.Click += new System.EventHandler(this.ClearItem_Click);
             // 
@@ -89,7 +95,7 @@
             // 
             this.exitItem.Name = "exitItem";
             this.exitItem.ShortcutKeyDisplayString = "";
-            this.exitItem.Size = new System.Drawing.Size(191, 22);
+            this.exitItem.Size = new System.Drawing.Size(289, 34);
             this.exitItem.Text = "Exit";
             this.exitItem.Click += new System.EventHandler(this.ExitItem_Click);
             // 
@@ -99,14 +105,81 @@
             this.dispDropDown,
             this.winStartupItem});
             this.configDropDown.Name = "configDropDown";
-            this.configDropDown.Size = new System.Drawing.Size(55, 22);
+            this.configDropDown.Size = new System.Drawing.Size(81, 29);
             this.configDropDown.Text = "Config";
+            // 
+            // dispDropDown
+            // 
+            this.dispDropDown.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.dispTextItem,
+            this.dispFilesItem,
+            this.dispImagesItem,
+            this.dispAudioItem,
+            this.dispCustomItem});
+            this.dispDropDown.Name = "dispDropDown";
+            this.dispDropDown.Size = new System.Drawing.Size(342, 34);
+            this.dispDropDown.Text = "Which type of data to show?";
+            // 
+            // dispTextItem
+            // 
+            this.dispTextItem.Checked = true;
+            this.dispTextItem.CheckOnClick = true;
+            this.dispTextItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.dispTextItem.Name = "dispTextItem";
+            this.dispTextItem.ShortcutKeys = System.Windows.Forms.Keys.F1;
+            this.dispTextItem.Size = new System.Drawing.Size(207, 34);
+            this.dispTextItem.Text = "Text";
+            this.dispTextItem.Click += new System.EventHandler(this.DispTextItem_Click);
+            // 
+            // dispFilesItem
+            // 
+            this.dispFilesItem.Checked = true;
+            this.dispFilesItem.CheckOnClick = true;
+            this.dispFilesItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.dispFilesItem.Name = "dispFilesItem";
+            this.dispFilesItem.ShortcutKeys = System.Windows.Forms.Keys.F2;
+            this.dispFilesItem.Size = new System.Drawing.Size(207, 34);
+            this.dispFilesItem.Text = "Files";
+            this.dispFilesItem.Click += new System.EventHandler(this.DispFilesItem_Click);
+            // 
+            // dispImagesItem
+            // 
+            this.dispImagesItem.Checked = true;
+            this.dispImagesItem.CheckOnClick = true;
+            this.dispImagesItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.dispImagesItem.Name = "dispImagesItem";
+            this.dispImagesItem.ShortcutKeys = System.Windows.Forms.Keys.F3;
+            this.dispImagesItem.Size = new System.Drawing.Size(207, 34);
+            this.dispImagesItem.Text = "Images";
+            this.dispImagesItem.Click += new System.EventHandler(this.DispImagesItem_Click);
+            // 
+            // dispAudioItem
+            // 
+            this.dispAudioItem.Checked = true;
+            this.dispAudioItem.CheckOnClick = true;
+            this.dispAudioItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.dispAudioItem.Name = "dispAudioItem";
+            this.dispAudioItem.ShortcutKeys = System.Windows.Forms.Keys.F4;
+            this.dispAudioItem.Size = new System.Drawing.Size(207, 34);
+            this.dispAudioItem.Text = "Audio";
+            this.dispAudioItem.Click += new System.EventHandler(this.DispAudioItem_Click);
+            // 
+            // dispCustomItem
+            // 
+            this.dispCustomItem.Checked = true;
+            this.dispCustomItem.CheckOnClick = true;
+            this.dispCustomItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.dispCustomItem.Name = "dispCustomItem";
+            this.dispCustomItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
+            this.dispCustomItem.Size = new System.Drawing.Size(207, 34);
+            this.dispCustomItem.Text = "Custom";
+            this.dispCustomItem.Click += new System.EventHandler(this.DispCustomItem_Click);
             // 
             // winStartupItem
             // 
             this.winStartupItem.CheckOnClick = true;
             this.winStartupItem.Name = "winStartupItem";
-            this.winStartupItem.Size = new System.Drawing.Size(224, 22);
+            this.winStartupItem.Size = new System.Drawing.Size(342, 34);
             this.winStartupItem.Text = "Run on Windows Startup";
             this.winStartupItem.Click += new System.EventHandler(this.WinStartupItem_Click);
             // 
@@ -115,32 +188,22 @@
             this.listBox.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.listBox.FormattingEnabled = true;
             this.listBox.HorizontalScrollbar = true;
-            this.listBox.ItemHeight = 17;
-            this.listBox.Location = new System.Drawing.Point(12, 69);
+            this.listBox.ItemHeight = 28;
+            this.listBox.Location = new System.Drawing.Point(18, 106);
+            this.listBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.listBox.Name = "listBox";
-            this.listBox.Size = new System.Drawing.Size(382, 208);
+            this.listBox.Size = new System.Drawing.Size(571, 340);
             this.listBox.TabIndex = 1;
             this.listBox.DoubleClick += new System.EventHandler(this.ListBox_DoubleClick);
-            // 
-            // moveTopBtn
-            // 
-            this.moveTopBtn.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.moveTopBtn.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.moveTopBtn.Location = new System.Drawing.Point(12, 28);
-            this.moveTopBtn.Name = "moveTopBtn";
-            this.moveTopBtn.Size = new System.Drawing.Size(103, 33);
-            this.moveTopBtn.TabIndex = 2;
-            this.moveTopBtn.Text = "Move to Top";
-            this.moveTopBtn.UseVisualStyleBackColor = false;
-            this.moveTopBtn.Click += new System.EventHandler(this.MoveTopBtn_Click);
             // 
             // removeBtn
             // 
             this.removeBtn.BackColor = System.Drawing.SystemColors.ControlLight;
             this.removeBtn.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.removeBtn.Location = new System.Drawing.Point(290, 27);
+            this.removeBtn.Location = new System.Drawing.Point(435, 42);
+            this.removeBtn.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.removeBtn.Name = "removeBtn";
-            this.removeBtn.Size = new System.Drawing.Size(103, 33);
+            this.removeBtn.Size = new System.Drawing.Size(154, 51);
             this.removeBtn.TabIndex = 3;
             this.removeBtn.Text = "Remove";
             this.removeBtn.UseVisualStyleBackColor = false;
@@ -149,10 +212,9 @@
             // notifLabel
             // 
             this.notifLabel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.notifLabel.Location = new System.Drawing.Point(119, 36);
-            this.notifLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.notifLabel.Location = new System.Drawing.Point(178, 55);
             this.notifLabel.Name = "notifLabel";
-            this.notifLabel.Size = new System.Drawing.Size(166, 15);
+            this.notifLabel.Size = new System.Drawing.Size(249, 23);
             this.notifLabel.TabIndex = 4;
             this.notifLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
@@ -166,116 +228,42 @@
             // 
             // contextMenuStrip
             // 
+            this.contextMenuStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.helpToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(100, 48);
+            this.contextMenuStrip.Size = new System.Drawing.Size(122, 68);
             // 
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(99, 22);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(121, 32);
             this.helpToolStripMenuItem.Text = "Help";
             this.helpToolStripMenuItem.Click += new System.EventHandler(this.HelpItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(99, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(121, 32);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitItem_Click);
-            // 
-            // dispDropDown
-            // 
-            this.dispDropDown.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.dispTextItem,
-            this.dispFilesItem,
-            this.dispImagesItem,
-            this.dispAudioItem,
-            this.dispCustomItem});
-            this.dispDropDown.Name = "dispDropDown";
-            this.dispDropDown.Size = new System.Drawing.Size(224, 22);
-            this.dispDropDown.Text = "Which type of data to show?";
-            // 
-            // dispTextItem
-            // 
-            this.dispTextItem.Checked = true;
-            this.dispTextItem.CheckOnClick = true;
-            this.dispTextItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.dispTextItem.Name = "dispTextItem";
-            this.dispTextItem.ShortcutKeys = System.Windows.Forms.Keys.F1;
-            this.dispTextItem.Size = new System.Drawing.Size(180, 22);
-            this.dispTextItem.Text = "Text";
-            this.dispTextItem.Click += new System.EventHandler(this.DispTextItem_Click);
-            // 
-            // dispFilesItem
-            // 
-            this.dispFilesItem.Checked = true;
-            this.dispFilesItem.CheckOnClick = true;
-            this.dispFilesItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.dispFilesItem.Name = "dispFilesItem";
-            this.dispFilesItem.ShortcutKeys = System.Windows.Forms.Keys.F2;
-            this.dispFilesItem.Size = new System.Drawing.Size(180, 22);
-            this.dispFilesItem.Text = "Files";
-            this.dispFilesItem.Click += new System.EventHandler(this.DispFilesItem_Click);
-            // 
-            // dispImagesItem
-            // 
-            this.dispImagesItem.Checked = true;
-            this.dispImagesItem.CheckOnClick = true;
-            this.dispImagesItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.dispImagesItem.Name = "dispImagesItem";
-            this.dispImagesItem.ShortcutKeys = System.Windows.Forms.Keys.F3;
-            this.dispImagesItem.Size = new System.Drawing.Size(180, 22);
-            this.dispImagesItem.Text = "Images";
-            this.dispImagesItem.Click += new System.EventHandler(this.DispImagesItem_Click);
-            // 
-            // dispAudioItem
-            // 
-            this.dispAudioItem.Checked = true;
-            this.dispAudioItem.CheckOnClick = true;
-            this.dispAudioItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.dispAudioItem.Name = "dispAudioItem";
-            this.dispAudioItem.ShortcutKeys = System.Windows.Forms.Keys.F4;
-            this.dispAudioItem.Size = new System.Drawing.Size(180, 22);
-            this.dispAudioItem.Text = "Audio";
-            this.dispAudioItem.Click += new System.EventHandler(this.DispAudioItem_Click);
-            // 
-            // dispCustomItem
-            // 
-            this.dispCustomItem.Checked = true;
-            this.dispCustomItem.CheckOnClick = true;
-            this.dispCustomItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.dispCustomItem.Name = "dispCustomItem";
-            this.dispCustomItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.dispCustomItem.Size = new System.Drawing.Size(180, 22);
-            this.dispCustomItem.Text = "Custom";
-            this.dispCustomItem.Click += new System.EventHandler(this.DispCustomItem_Click);
-            // 
-            // helpItem
-            // 
-            this.helpItem.Name = "helpItem";
-            this.helpItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.H)));
-            this.helpItem.Size = new System.Drawing.Size(191, 22);
-            this.helpItem.Text = "Help";
-            this.helpItem.Click += new System.EventHandler(this.HelpItem_Click);
             // 
             // MainWindow
             // 
             this.AllowDrop = true;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(406, 290);
+            this.ClientSize = new System.Drawing.Size(609, 446);
             this.Controls.Add(this.notifLabel);
             this.Controls.Add(this.removeBtn);
-            this.Controls.Add(this.moveTopBtn);
             this.Controls.Add(this.listBox);
             this.Controls.Add(this.menuStrip);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip;
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
             this.Name = "MainWindow";
             this.Text = "MultiPaste";
@@ -300,7 +288,6 @@
         private System.Windows.Forms.ToolStripMenuItem configDropDown;
         private System.Windows.Forms.ToolStripMenuItem winStartupItem;
         private System.Windows.Forms.ListBox listBox;
-        private System.Windows.Forms.Button moveTopBtn;
         private System.Windows.Forms.Button removeBtn;
         private System.Windows.Forms.Label notifLabel;
         private System.Windows.Forms.NotifyIcon notifyIcon;

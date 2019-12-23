@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
+using System.Windows.Forms;
 
 namespace MultiPaste
 {
     class AudioItem : ClipboardItem
     {
-        public AudioItem(MainWindow mainWindow, Stream audioStream) : base(mainWindow, TypeEnum.Audio)
+        public AudioItem(Stream audioStream) : base(TypeEnum.Audio)
         {
             using (audioStream)
             {
@@ -53,10 +56,11 @@ namespace MultiPaste
                 if (KeyDiff != 0) KeyText += KeyDiff;
 
                 // create Audio folder if it's missing
-                Directory.CreateDirectory(FolderDir);
+                string audioFolder = LocalClipboard.GetAudioFolder();
+                Directory.CreateDirectory(audioFolder);
 
                 // create audio file in the Audio folder
-                using (var fileStream = File.Create(Path.Combine(FolderDir, KeyText)))
+                using (var fileStream = File.Create(Path.Combine(audioFolder, KeyText)))
                 {
                     audioStream.Seek(0, SeekOrigin.Begin);
                     audioStream.CopyTo(fileStream);
@@ -78,13 +82,14 @@ namespace MultiPaste
 
             #endregion
 
-            Add(); // add to ListBox, KeyTextCollection, and ClipboardDict, then append to the CLIPBOARD file
+            // add to local clipboard with CLIPBOARD file
+            LocalClipboard.AddWithFile(this.KeyText, this);
 
-            mainWindow.NotifyUser("Audio item added!");
+            MsgLabel.Normal("Audio item added!");
         }
 
-        public AudioItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
-            : base(mainWindow, TypeEnum.Audio, keyDiff)
+        public AudioItem(ushort keyDiff, StreamReader streamReader)
+            : base(TypeEnum.Audio, keyDiff)
         {
             // retrieving ByteLength and KeyText from the stream
             ByteLength = long.Parse(streamReader.ReadLine());
@@ -106,40 +111,40 @@ namespace MultiPaste
             #endregion
 
             // if audio file is missing, remove item data from the temp CLIPBOARD file and return
-            if (!File.Exists(Path.Combine(FolderDir, KeyText)))
+            string audioFolder = LocalClipboard.GetAudioFolder();
+            if (!File.Exists(Path.Combine(audioFolder, KeyText)))
             {
-                File.WriteAllText(TempClipDir, File.ReadAllText(TempClipDir).Replace(FileChars, ""));
+                string tempFile = LocalClipboard.GetTempFile();
+                File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(FileChars, ""));
                 return;
             }
 
-            // add to ListBox, KeyTextCollection, and ClipboardDict
-            mainWindow.ListBox.Items.Insert(0, KeyText);
-            mainWindow.KeyTextCollection.Insert(0, KeyText);
-            mainWindow.ClipboardDict.Add(KeyText, this);
+            // add to local clipboard
+            LocalClipboard.Add(this.KeyText, this);
         }
 
-        /// static property that returns the directory of the Audio folder
-        public static string FolderDir { get; } = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Audio");
+        ///// static property that returns the directory of the Audio folder
+        //public static string FolderDir { get; } = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Audio");
 
         /// store length in bytes of the audio stream
         public long ByteLength { get; }
 
-        public override void Remove()
-        {
-            base.Remove(); // remove from ListBox, KeyTextCollection, ClipboardDict, and the CLIPBOARD file
+        //public override void Remove()
+        //{
+        //    base.Remove(); // remove from ListBox, KeyTextCollection, ClipboardDict, and the CLIPBOARD file
 
-            // if directory is missing, there is no image to remove
-            if (!Directory.Exists(FolderDir))
-                return;
+        //    // if directory is missing, there is no image to remove
+        //    if (!Directory.Exists(FolderDir))
+        //        return;
 
-            // delete audio file if it exists
-            if (File.Exists(Path.Combine(FolderDir, KeyText)))
-                File.Delete(Path.Combine(FolderDir, KeyText));
+        //    // delete audio file if it exists
+        //    if (File.Exists(Path.Combine(FolderDir, KeyText)))
+        //        File.Delete(Path.Combine(FolderDir, KeyText));
 
-            // delete the audio directory if it's empty
-            if (Directory.GetFiles(FolderDir).Length <= 0)
-                Directory.Delete(FolderDir);
-        }
+        //    // delete the audio directory if it's empty
+        //    if (Directory.GetFiles(FolderDir).Length <= 0)
+        //        Directory.Delete(FolderDir);
+        //}
 
         protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
         {

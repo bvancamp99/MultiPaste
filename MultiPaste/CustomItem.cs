@@ -7,7 +7,7 @@ namespace MultiPaste
 {
     class CustomItem : ClipboardItem
     {
-        public CustomItem(MainWindow mainWindow, IDataObject dataObject) : base(mainWindow, TypeEnum.Custom)
+        public CustomItem(IDataObject dataObject) : base(TypeEnum.Custom)
         {
             // ensure dataObject is valid before continuing
             if (dataObject == null) return;
@@ -57,10 +57,11 @@ namespace MultiPaste
             if (KeyDiff != 0) KeyText += KeyDiff;
 
             // create folder if it's missing
-            Directory.CreateDirectory(FolderDir);
+            string customFolder = LocalClipboard.GetCustomFolder();
+            Directory.CreateDirectory(customFolder);
 
             // create file in Custom folder with dataObject
-            using (var fileStream = File.Create(Path.Combine(FolderDir, KeyText)))
+            using (var fileStream = File.Create(Path.Combine(customFolder, KeyText)))
             {
                 new BinaryFormatter().Serialize(fileStream, dataObject.GetData(WritableFormat));
             }
@@ -78,14 +79,14 @@ namespace MultiPaste
 
             #endregion
 
-            // add to ListBox, KeyTextCollection, and ClipboardDict, then append to the CLIPBOARD file
-            Add();
+            // add to local clipboard with CLIPBOARD file
+            LocalClipboard.AddWithFile(this.KeyText, this);
 
-            mainWindow.NotifyUser("Custom item added!");
+            MsgLabel.Normal("Custom item added!");
         }
 
-        public CustomItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
-            : base(mainWindow, TypeEnum.Custom, keyDiff)
+        public CustomItem(ushort keyDiff, StreamReader streamReader)
+            : base(TypeEnum.Custom, keyDiff)
         {
             // retrieving WritableFormat from the stream
             WritableFormat = streamReader.ReadLine();
@@ -114,40 +115,40 @@ namespace MultiPaste
             #endregion
 
             // if custom file is missing, remove item data from the temp CLIPBOARD file and return
-            if (!File.Exists(Path.Combine(FolderDir, KeyText)))
+            string customFolder = LocalClipboard.GetCustomFolder();
+            if (!File.Exists(Path.Combine(customFolder, KeyText)))
             {
-                File.WriteAllText(TempClipDir, File.ReadAllText(TempClipDir).Replace(FileChars, ""));
+                string tempFile = LocalClipboard.GetTempFile();
+                File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(FileChars, ""));
                 return;
             }
 
-            // add to ListBox, KeyTextCollection, and ClipboardDict
-            mainWindow.ListBox.Items.Insert(0, KeyText);
-            mainWindow.KeyTextCollection.Insert(0, KeyText);
-            mainWindow.ClipboardDict.Add(KeyText, this);
+            // add to local clipboard
+            LocalClipboard.Add(this.KeyText, this);
         }
 
-        /// static property that returns the directory of the Images folder
-        public static string FolderDir { get; } = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Custom");
+        ///// static property that returns the directory of the Images folder
+        //public static string FolderDir { get; } = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Custom");
 
         /// store format whose data is serializable, i.e. can be written to the CLIPBOARD file
         public string WritableFormat { get; private set; }
 
-        public override void Remove()
-        {
-            base.Remove(); // remove from ListBox, KeyTextCollection, ClipboardDict, and the CLIPBOARD file
+        //public override void Remove()
+        //{
+        //    base.Remove(); // remove from ListBox, KeyTextCollection, ClipboardDict, and the CLIPBOARD file
 
-            // if directory is missing, there is no file to remove
-            if (!Directory.Exists(FolderDir))
-                return;
+        //    // if directory is missing, there is no file to remove
+        //    if (!Directory.Exists(FolderDir))
+        //        return;
 
-            // delete custom file if it exists
-            if (File.Exists(Path.Combine(FolderDir, KeyText)))
-                File.Delete(Path.Combine(FolderDir, KeyText));
+        //    // delete custom file if it exists
+        //    if (File.Exists(Path.Combine(FolderDir, KeyText)))
+        //        File.Delete(Path.Combine(FolderDir, KeyText));
 
-            // delete the custom directory if it's empty
-            if (Directory.GetFiles(FolderDir).Length <= 0)
-                Directory.Delete(FolderDir);
-        }
+        //    // delete the custom directory if it's empty
+        //    if (Directory.GetFiles(FolderDir).Length <= 0)
+        //        Directory.Delete(FolderDir);
+        //}
 
         protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
         {

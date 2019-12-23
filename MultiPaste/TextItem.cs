@@ -5,7 +5,7 @@ namespace MultiPaste
 {
     class TextItem : ClipboardItem
     {
-        public TextItem(MainWindow mainWindow, string text) : base(mainWindow, TypeEnum.Text)
+        public TextItem(string text) : base(TypeEnum.Text)
         {
             #region setting Text using param string
 
@@ -24,8 +24,8 @@ namespace MultiPaste
             KeyText = "Text: ";
 
             // append to KeyText given Text
-            if (Text.Length > mainWindow.CharacterLimit - KeyText.Length)
-                KeyText += Text.Substring(0, mainWindow.CharacterLimit - KeyText.Length) + "...";
+            if (Text.Length > LocalClipboard.CHAR_LIMIT - KeyText.Length)
+                KeyText += Text.Substring(0, LocalClipboard.CHAR_LIMIT - KeyText.Length) + "...";
             else
                 KeyText += Text;
 
@@ -56,13 +56,14 @@ namespace MultiPaste
 
             #endregion
 
-            Add(); // add to ListBox, KeyTextCollection, and ClipboardDict, then append to the CLIPBOARD file
+            // add to local clipboard with CLIPBOARD file
+            LocalClipboard.AddWithFile(this.KeyText, this);
 
-            mainWindow.NotifyUser("Text item added!");
+            MsgLabel.Normal("Text item added!");
         }
 
-        public TextItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader) 
-            : base(mainWindow, TypeEnum.Text, keyDiff)
+        public TextItem(ushort keyDiff, StreamReader streamReader) 
+            : base(TypeEnum.Text, keyDiff)
         {
             #region retrieving Text from the stream
 
@@ -84,8 +85,8 @@ namespace MultiPaste
             KeyText = "Text: ";
 
             // append to KeyText given Text
-            if (Text.Length > mainWindow.CharacterLimit - KeyText.Length)
-                KeyText += Text.Substring(0, mainWindow.CharacterLimit - KeyText.Length) + "...";
+            if (Text.Length > LocalClipboard.CHAR_LIMIT - KeyText.Length)
+                KeyText += Text.Substring(0, LocalClipboard.CHAR_LIMIT - KeyText.Length) + "...";
             else
                 KeyText += Text;
 
@@ -109,10 +110,8 @@ namespace MultiPaste
 
             #endregion
 
-            // add to data structures
-            mainWindow.ListBox.Items.Insert(0, KeyText);
-            mainWindow.KeyTextCollection.Insert(0, KeyText);
-            mainWindow.ClipboardDict.Add(KeyText, this);
+            // add to local clipboard
+            LocalClipboard.Add(this.KeyText, this);
         }
 
         /// store the text of the item

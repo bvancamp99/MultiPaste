@@ -6,7 +6,7 @@ namespace MultiPaste
 {
     class ImageItem : ClipboardItem
     {
-        public ImageItem(MainWindow mainWindow, Image image) : base(mainWindow, TypeEnum.Image)
+        public ImageItem(Image image) : base(TypeEnum.Image)
         {
             using (image)
             {
@@ -34,10 +34,11 @@ namespace MultiPaste
                 if (KeyDiff != 0) KeyText += KeyDiff;
 
                 // create Images folder if it's missing
-                Directory.CreateDirectory(FolderDir);
+                string imageFolder = LocalClipboard.GetImageFolder();
+                Directory.CreateDirectory(imageFolder);
 
                 // create image file in the Images folder
-                image.Save(Path.Combine(FolderDir, KeyText));
+                image.Save(Path.Combine(imageFolder, KeyText));
             }
 
             #region setting FileChars using Type, KeyDiff, Size.Width, and Size.Height
@@ -55,13 +56,14 @@ namespace MultiPaste
 
             #endregion
 
-            Add(); // add to ListBox, KeyTextCollection, and ClipboardDict, then append to the CLIPBOARD file
+            // add to local clipboard with CLIPBOARD file
+            LocalClipboard.AddWithFile(this.KeyText, this);
 
-            mainWindow.NotifyUser("Image item added!");
+            MsgLabel.Normal("Image item added!");
         }
 
-        public ImageItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader) 
-            : base(mainWindow, TypeEnum.Image, keyDiff)
+        public ImageItem(ushort keyDiff, StreamReader streamReader) 
+            : base(TypeEnum.Image, keyDiff)
         {
             #region retrieving Size from the stream
 
@@ -102,40 +104,40 @@ namespace MultiPaste
             #endregion
 
             // if image file is missing, remove item data from the temp CLIPBOARD file and return
-            if (!File.Exists(Path.Combine(FolderDir, KeyText)))
+            string imageFolder = LocalClipboard.GetImageFolder();
+            if (!File.Exists(Path.Combine(imageFolder, KeyText)))
             {
-                File.WriteAllText(TempClipDir, File.ReadAllText(TempClipDir).Replace(FileChars, ""));
+                string tempFile = LocalClipboard.GetTempFile();
+                File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(FileChars, ""));
                 return;
             }
 
-            // add to data structures
-            mainWindow.ListBox.Items.Insert(0, KeyText);
-            mainWindow.KeyTextCollection.Insert(0, KeyText);
-            mainWindow.ClipboardDict.Add(KeyText, this);
+            // add to local clipboard
+            LocalClipboard.Add(this.KeyText, this);
         }
 
-        /// static property that returns the directory of the Images folder
-        public static string FolderDir { get; } = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images");
+        ///// static property that returns the directory of the Images folder
+        //public static string FolderDir { get; } = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images");
 
         /// store pixel dimensions of the image linked to this item
         public Size Size { get; }
 
-        public override void Remove()
-        {
-            base.Remove(); // remove from ListBox, KeyTextCollection, ClipboardDict, and the CLIPBOARD file
+        //public override void Remove()
+        //{
+        //    base.Remove(); // remove from ListBox, KeyTextCollection, ClipboardDict, and the CLIPBOARD file
 
-            // if directory is missing, there is no file to remove
-            if (!Directory.Exists(FolderDir))
-                return;
+        //    // if directory is missing, there is no file to remove
+        //    if (!Directory.Exists(FolderDir))
+        //        return;
 
-            // delete image file if it exists
-            if (File.Exists(Path.Combine(FolderDir, KeyText)))
-                File.Delete(Path.Combine(FolderDir, KeyText));
+        //    // delete image file if it exists
+        //    if (File.Exists(Path.Combine(FolderDir, KeyText)))
+        //        File.Delete(Path.Combine(FolderDir, KeyText));
 
-            // delete the images directory if it's empty
-            if (Directory.GetFiles(FolderDir).Length <= 0)
-                Directory.Delete(FolderDir);
-        }
+        //    // delete the images directory if it's empty
+        //    if (Directory.GetFiles(FolderDir).Length <= 0)
+        //        Directory.Delete(FolderDir);
+        //}
 
         protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
         {

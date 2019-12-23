@@ -6,7 +6,7 @@ namespace MultiPaste
 {
     class FileItem : ClipboardItem
     {
-        public FileItem(MainWindow mainWindow, StringCollection fileDropList) : base(mainWindow, TypeEnum.FileDropList)
+        public FileItem(StringCollection fileDropList) : base(TypeEnum.FileDropList)
         {
             #region setting FileDropList using param
 
@@ -29,8 +29,8 @@ namespace MultiPaste
                 KeyText = "Files: " + Path.GetFileName(FileDropList[0]) + " + " + (FileDropList.Count - 1) + " more";
 
             // shorten KeyText to fit the character limit if needed
-            if (KeyText.Length > mainWindow.CharacterLimit)
-                KeyText = KeyText.Substring(0, mainWindow.CharacterLimit) + "...";
+            if (KeyText.Length > LocalClipboard.CHAR_LIMIT)
+                KeyText = KeyText.Substring(0, LocalClipboard.CHAR_LIMIT) + "...";
 
             #endregion
 
@@ -62,13 +62,14 @@ namespace MultiPaste
 
             #endregion
 
-            Add(); // add to ListBox, KeyTextCollection, and ClipboardDict, then append to the CLIPBOARD file
+            // add to local clipboard with CLIPBOARD file
+            LocalClipboard.AddWithFile(this.KeyText, this);
 
-            mainWindow.NotifyUser("File item added!");
+            MsgLabel.Normal("File item added!");
         }
 
-        public FileItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader) 
-            : base(mainWindow, TypeEnum.FileDropList, keyDiff)
+        public FileItem(ushort keyDiff, StreamReader streamReader) 
+            : base(TypeEnum.FileDropList, keyDiff)
         {
             #region retrieving FileDropList from the stream
 
@@ -92,8 +93,8 @@ namespace MultiPaste
                 KeyText = "Files: " + Path.GetFileName(FileDropList[0]) + " + " + (FileDropList.Count - 1) + " more";
 
             // shorten KeyText to fit the character limit if needed
-            if (KeyText.Length > mainWindow.CharacterLimit)
-                KeyText = KeyText.Substring(0, mainWindow.CharacterLimit) + "...";
+            if (KeyText.Length > LocalClipboard.CHAR_LIMIT)
+                KeyText = KeyText.Substring(0, LocalClipboard.CHAR_LIMIT) + "...";
 
             // add KeyDiff to KeyText if needed
             if (KeyDiff != 0) KeyText += KeyDiff;
@@ -118,10 +119,8 @@ namespace MultiPaste
 
             #endregion
 
-            // add to data structures
-            mainWindow.ListBox.Items.Insert(0, KeyText);
-            mainWindow.KeyTextCollection.Insert(0, KeyText);
-            mainWindow.ClipboardDict.Add(KeyText, this);
+            // add to local clipboard
+            LocalClipboard.Add(this.KeyText, this);
         }
 
         /// store the file drop list originally received from the Clipboard
