@@ -19,13 +19,20 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Improve </h3>
 <ul>
-  <li>Finish LocalClipboard</li>
-  <li>Error log class</li>
+  <li>Working on LocalConfig.cs; moving over RestrictTypes method</li>
+  <li>So we init instances of our custom classes in MainWindow, right?  Why don't we make use of those instances for methods in those classes only used by MainWindow?  Then we would need fewer static methods.</li>
+  <li>Use CheckedChanged event for updating config items</li>
+  <li>See about removing getters from LocalClipboard.cs</li>
+  <li>Would like to improve ClipboardItem.SetKeyDiff.  It does a lot of things that don't make sense without significant context.  Would also like to move it to LocalClipboard.cs</li>
+  <li>Show copied images on the listbox</li>
+  <li>Could just compare the byte arrays to determine equivalence for ImageItem, AudioItem, and CustomItem</li>
+  <li>Merge all ClipboardItem classes into one class</li>
+  <li>Class for config file</li>
   <li>Work on MsgLabel.Fatal</li>
-  <li>We're passing MainWindow instances in a lot of places.  Maybe we could instead make some of its methods static so that an instance isn't required to be sent to classes that use it.</li>
   <li>Catch errors thrown and write to an error log file.  Could be like in CS 536's ErrMsg.java file, which has static methods fatal and warning.  If warning, write to error log and notify user.  If failure, prog would probably have to close, but the user can refer to the error log for details.  Should display the error, along with line num of the CLIPBOARD file; maybe some additional things.</li>
+  <li>Config setting for up/down keys wrapping to the other end</li>
   <li>Moving item to the top or bottom should set index to nearby item rather than to the top or bottom.  Maybe provide a config setting to let the user choose.</li>
-  <li>After copying item, move index to that of the copied item</li>
+  <li>After copying item, move index to that of the copied item; config setting?</li>
   <li>ImageItem.IsEquivalent - with experience, I think it would be better to replace with new image if same size</li>
   <li>CustomItem.IsEquivalent</li>
   <li>Keep menuStrip open when a toggle check item is clicked.</li>
@@ -33,12 +40,13 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Add </h3>
 <ul>
+  <li>Maybe add class for help file</li>
   <li>Ctrl+z support to undelete items.  Could implement by storing the item in a temp ClipboardItem variable before deleting.  Then if Ctrl+z is pressed, it pushes that item to the top of the list.</li>
   <li>Copy item with ctrl+c</li>
   <li>Ability to pin items to the top</li>
   <li>Search algorithm!</li>
   <li>Drag-and-drop support for raw images</li>
-  <li>If copying an image, give user the option to paste as a file or image</li>
+  <li>If copying an image, give user the option to paste as a file or image; config setting?</li>
   <li>Sync support via peer-to-peer relay server</li>
   <li>An improved look for the program icon</li>
   <li>Support for storing image as its original format</li>

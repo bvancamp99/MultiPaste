@@ -342,28 +342,6 @@ namespace MultiPaste
             LocalClipboard.myListBox.SelectedIndex = current;
         }
 
-        public static void OnTypeRestrictionClick(ToolStripMenuItem text, ToolStripMenuItem files, 
-            ToolStripMenuItem images, ToolStripMenuItem audio, ToolStripMenuItem custom)
-        {
-            // first, clear the listbox
-            LocalClipboard.myListBox.Items.Clear();
-
-            // add each item back to the listbox if its type is allowed
-            bool allow;
-            foreach (string key in LocalClipboard.myKeys)
-            {
-                allow = (text.Checked && LocalClipboard.myDict[key].Type == ClipboardItem.TypeEnum.Text)
-                    || (files.Checked && LocalClipboard.myDict[key].Type == ClipboardItem.TypeEnum.FileDropList)
-                    || (images.Checked && LocalClipboard.myDict[key].Type == ClipboardItem.TypeEnum.Image)
-                    || (audio.Checked && LocalClipboard.myDict[key].Type == ClipboardItem.TypeEnum.Audio)
-                    || (custom.Checked && LocalClipboard.myDict[key].Type == ClipboardItem.TypeEnum.Custom);
-
-                // if type is allowed, add to the listbox
-                if (allow)
-                    LocalClipboard.myListBox.Items.Add(key);
-            }
-        }
-
         public static void Copy()
         {
             // check for valid SelectedIndex val before continuing

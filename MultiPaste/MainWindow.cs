@@ -12,8 +12,8 @@ namespace MultiPaste
 {
     public partial class MainWindow : Form
     {
-        private const string CONFIG_FILENAME = "CONFIG"; // store name of config file
-        //private const byte CHAR_LIMIT = 100; // store max number of characters that can be displayed as a key in the dictionary
+        //private const string CONFIG_FILENAME = "CONFIG"; // store name of config file
+        private readonly LocalConfig myConfig; // controls user config information
         private readonly LocalClipboard myClipboard; // the driver of the clipboard history function
         private readonly MsgLabel msgLabel; // custom label that messages the user via Label and Timer
         private readonly GlobalEventHook eventHook; // WndProc event hook to detect clipboard changes and user input
@@ -21,29 +21,26 @@ namespace MultiPaste
         public MainWindow()
         {
             // required method for Designer support
-            InitializeComponent();
+            this.InitializeComponent();
 
-            // read from config file to get user config information
-            var fileStream = new FileStream(Path.Combine(AppDomain.CurrentDomain.
-                BaseDirectory, CONFIG_FILENAME), FileMode.OpenOrCreate);
-            using (fileStream)
-            {
-                // if length is 0, the file was probably removed or misplaced; set to default values
-                if (fileStream.Length == 0)
-                    winStartupItem.Checked = true;
-                // else read bytes and assign to the appropriate properties
-                else
-                    winStartupItem.Checked = Convert.ToBoolean((byte)fileStream.ReadByte());
-            }
+            //// read from config file to get user config information
+            //var fileStream = new FileStream(Path.Combine(AppDomain.CurrentDomain.
+            //    BaseDirectory, CONFIG_FILENAME), FileMode.OpenOrCreate);
+            //using (fileStream)
+            //{
+            //    // if length is 0, the file was probably removed or misplaced; set to default values
+            //    if (fileStream.Length == 0)
+            //        winStartupItem.Checked = true;
+            //    // else read bytes and assign to the appropriate properties
+            //    else
+            //        winStartupItem.Checked = Convert.ToBoolean((byte)fileStream.ReadByte());
+            //}
 
-            // change properties depending on user config settings
-            UpdateWindowsStartup();
+            //// change properties depending on user config settings
+            //UpdateWindowsStartup();
 
-            //// init clipboard dictionary
-            //ClipboardDict = new Dictionary<string, ClipboardItem>();
-
-            //// read from clipboard file and add each saved clipboard item
-            //AddClipboardItemsFromFile();
+            // init myConfig, used for user config information
+            this.myConfig = new LocalConfig(this);
 
             // init myClipboard, the driver of the clipboard history function
             this.myClipboard = new LocalClipboard(this.listBox);
@@ -55,40 +52,35 @@ namespace MultiPaste
             this.eventHook = new GlobalEventHook(this);
         }
 
-        ///// if true, clipboard change will be handled when detected
-        //public bool HandleClipboard { get; private set; } = true;
+        public ToolStripMenuItem GetWinStartup()
+        {
+            return this.winStartupItem;
+        }
 
-        ///// safely returns private const int CHAR_LIMIT
-        //public byte CharacterLimit
-        //{
-        //    get { return CHAR_LIMIT; }
-        //}
+        public ToolStripMenuItem GetShowText()
+        {
+            return this.showTextItem;
+        }
 
-        ///// store all clipboard items' KeyTexts in a StringCollection
-        //public StringCollection KeyTextCollection { get; } = new StringCollection();
+        public ToolStripMenuItem GetShowFiles()
+        {
+            return this.showFilesItem;
+        }
 
-        /// safely returns private ListBox listBox
-        //public ListBox ListBox
-        //{
-        //    get { return listBox; }
-        //}
+        public ToolStripMenuItem GetShowImages()
+        {
+            return this.showImagesItem;
+        }
 
-        ///// store/retrieve clipboard data
-        //internal Dictionary<string, ClipboardItem> ClipboardDict { get; }
+        public ToolStripMenuItem GetShowAudio()
+        {
+            return this.showAudioItem;
+        }
 
-        //public void HandleClipboardChange()
-        //{
-        //    if (Clipboard.ContainsText())
-        //        new TextItem(this, Clipboard.GetText());
-        //    else if (Clipboard.ContainsFileDropList())
-        //        new FileItem(this, Clipboard.GetFileDropList());
-        //    else if (Clipboard.ContainsImage())
-        //        new ImageItem(this, Clipboard.GetImage());
-        //    else if (Clipboard.ContainsAudio())
-        //        new AudioItem(this, Clipboard.GetAudioStream());
-        //    else
-        //        new CustomItem(this, Clipboard.GetDataObject());
-        //}
+        public ToolStripMenuItem GetShowCustom()
+        {
+            return this.showCustomItem;
+        }
 
         private void MainWindow_DragEnter(object sender, DragEventArgs e)
         {
@@ -112,189 +104,30 @@ namespace MultiPaste
             }
         }
 
-        //private void CopyToClipboard()
+        //private void UpdateWindowsStartup()
         //{
-        //    // check for valid SelectedIndex val before continuing
-        //    if (ListBox.SelectedIndex < 0)
-        //        return;
+        //    // establish the registry key for Windows startup; bool set to true to allow write access
+        //    RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
-        //    // clipboard will be changed in this method; we don't want it to be handled
-        //    HandleClipboard = false;
-
-        //    // store the selected item
-        //    ClipboardItem clipboardItem = ClipboardDict[KeyTextCollection[ListBox.SelectedIndex]];
-
-        //    // store an error msg string that will notify the user if an error occurred
-        //    string errMsg = null;
-
-        //    switch (clipboardItem.Type)
-        //    {
-        //        case ClipboardItem.TypeEnum.Text:
-        //            Clipboard.SetText((clipboardItem as TextItem).Text);
-        //            break;
-
-        //        case ClipboardItem.TypeEnum.FileDropList:
-        //            Clipboard.SetFileDropList((clipboardItem as FileItem).FileDropList);
-        //            break;
-
-        //        case ClipboardItem.TypeEnum.Image:
-        //            if (File.Exists(Path.Combine(ImageItem.FolderDir, clipboardItem.KeyText)))
-        //            {
-        //                // store the image from the file
-        //                Image image = Image.FromFile(Path.Combine(ImageItem.FolderDir, clipboardItem.KeyText));
-
-        //                // set image to the Windows clipboard
-        //                Clipboard.SetImage(image);
-
-        //                // dispose the image to free up the file
-        //                image.Dispose();
-        //            }
-        //            else
-        //                errMsg = "Image file is missing!";
-        //            break;
-
-        //        case ClipboardItem.TypeEnum.Audio:
-        //            if (File.Exists(Path.Combine(AudioItem.FolderDir, clipboardItem.KeyText)))
-        //            {
-        //                // store audio stream from the file
-        //                Stream audio = new MemoryStream(File.ReadAllBytes(Path.Combine
-        //                    (AudioItem.FolderDir, clipboardItem.KeyText)));
-
-        //                // set audio to the Windows clipboard
-        //                Clipboard.SetAudio(audio);
-
-        //                // dispose the stream to free up the file
-        //                audio.Dispose();
-        //            }
-        //            else
-        //                errMsg = "Audio file is missing!";
-        //            break;
-
-        //        case ClipboardItem.TypeEnum.Custom:
-        //            if (File.Exists(Path.Combine(CustomItem.FolderDir, clipboardItem.KeyText)))
-        //            {
-        //                // store custom data from the file
-        //                object data;
-        //                using (var stream = new FileStream(Path.Combine(CustomItem.FolderDir,
-        //                    clipboardItem.KeyText), FileMode.Open))
-        //                {
-        //                    data = new BinaryFormatter().Deserialize(stream);
-        //                }
-
-        //                // set custom data to the Windows clipboard
-        //                Clipboard.SetData((clipboardItem as CustomItem).WritableFormat, data);
-        //            }
-        //            else
-        //                errMsg = "Custom file is missing!";
-        //            break;
-        //    }
-
-        //    // flip to true after algorithm is finished
-        //    HandleClipboard = true;
-
-        //    // notify to the user the results of the operation attempt
-        //    if (errMsg == null)
-        //        MsgLabel.Normal("Copied to clipboard!");
+        //    // add to or delete from Windows startup processes depending on bool
+        //    if (winStartupItem.Checked)
+        //        registryKey.SetValue("MultiPaste", System.Reflection.Assembly.GetEntryAssembly().Location);
         //    else
-        //        MsgLabel.Warn(errMsg);
+        //        registryKey.DeleteValue("MultiPaste", false);
         //}
 
-        //private void AddClipboardItemsFromFile()
+        //private void WriteConfigFile()
         //{
-        //    // if CLIPBOARD file is missing or empty
-        //    if (!File.Exists(ClipboardItem.ClipboardDir) || new FileInfo(ClipboardItem.ClipboardDir).Length <= 0)
-        //        return;
+        //    // init fileStream to write to file
+        //    var fileStream = new FileStream(Path.Combine(AppDomain.CurrentDomain.
+        //        BaseDirectory, CONFIG_FILENAME), FileMode.Create);
 
-        //    // if any data files are missing, this temp CLIPBOARD file will be updated
-        //    File.WriteAllText(ClipboardItem.TempClipDir, File.ReadAllText(ClipboardItem.ClipboardDir));
-
-        //    // traverse and store the contents of the file into new instances of ClipboardItem's derived classes
-        //    using (StreamReader streamReader = new StreamReader(ClipboardItem.ClipboardDir))
+        //    // before writing, clear config or create new empty file if it was unexpectedly deleted
+        //    using (fileStream)
         //    {
-        //        while (!streamReader.EndOfStream)
-        //        {
-        //            // Type
-        //            ClipboardItem.TypeEnum type = (ClipboardItem.TypeEnum)streamReader.Read();
-
-        //            // KeyDiff
-        //            ushort keyDiff = ushort.Parse(streamReader.ReadLine());
-
-        //            // remaining operations depend on the type of item
-        //            switch (type)
-        //            {
-        //                case ClipboardItem.TypeEnum.Text:
-        //                    new TextItem(this, keyDiff, streamReader);
-        //                    break;
-
-        //                case ClipboardItem.TypeEnum.FileDropList:
-        //                    new FileItem(this, keyDiff, streamReader);
-        //                    break;
-
-        //                case ClipboardItem.TypeEnum.Image:
-        //                    new ImageItem(this, keyDiff, streamReader);
-        //                    break;
-
-        //                case ClipboardItem.TypeEnum.Audio:
-        //                    new AudioItem(this, keyDiff, streamReader);
-        //                    break;
-
-        //                case ClipboardItem.TypeEnum.Custom:
-        //                    new CustomItem(this, keyDiff, streamReader);
-        //                    break;
-        //            }
-        //        }
+        //        // write applicable bools to file
+        //        fileStream.WriteByte(Convert.ToByte(winStartupItem.Checked));
         //    }
-
-        //    // all items have been read from the file and added; replace CLIPBOARD file with the temp file
-        //    File.Delete(ClipboardItem.ClipboardDir);
-        //    File.Move(ClipboardItem.TempClipDir, ClipboardItem.ClipboardDir);
-        //}
-
-        private void UpdateWindowsStartup()
-        {
-            // establish the registry key for Windows startup; bool set to true to allow write access
-            RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-
-            // add to or delete from Windows startup processes depending on bool
-            if (winStartupItem.Checked)
-                registryKey.SetValue("MultiPaste", System.Reflection.Assembly.GetEntryAssembly().Location);
-            else
-                registryKey.DeleteValue("MultiPaste", false);
-        }
-
-        private void WriteConfigFile()
-        {
-            // init fileStream to write to file
-            var fileStream = new FileStream(Path.Combine(AppDomain.CurrentDomain.
-                BaseDirectory, CONFIG_FILENAME), FileMode.Create);
-
-            // before writing, clear config or create new empty file if it was unexpectedly deleted
-            using (fileStream)
-            {
-                // write applicable bools to file
-                fileStream.WriteByte(Convert.ToByte(winStartupItem.Checked));
-            }
-        }
-
-        //private void RemoveItem(int index)
-        //{
-        //    // return if index is invalid
-        //    if (index < 0)
-        //        return;
-
-        //    // remove the ListBox item located at the index
-        //    ClipboardItem clipboardItem = ClipboardDict[KeyTextCollection[index]];
-        //    LocalClipboard.Remove(clipboardItem.KeyText, clipboardItem);
-
-        //    // if there was an item located after the removed item, select that item
-        //    if (ListBox.Items.Count > index)
-        //        ListBox.SelectedIndex = index;
-        //    // else select the item located before the removed item
-        //    else
-        //        ListBox.SelectedIndex = index - 1;
-
-        //    // notify the user of the successful operation for 3 seconds
-        //    MsgLabel.Normal("Item removed!");
         //}
 
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)
@@ -351,7 +184,8 @@ namespace MultiPaste
 
         private void NotifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            Visible = true; // show the form
+            // display MainWindow when system tray icon is double-clicked
+            this.Visible = true;
         }
 
         private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
@@ -360,105 +194,89 @@ namespace MultiPaste
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true; // cancel exiting prog
-                Visible = false; // hide the form
+                this.Visible = false; // hide the form
             }
         }
 
         private void ClearItem_Click(object sender, EventArgs e)
         {
-            //// clear ListBox, KeyTextCollection, and ClipboardDict
-            //ListBox.Items.Clear();
-            //KeyTextCollection.Clear();
-            //ClipboardDict.Clear();
-
-            //// delete the CLIPBOARD file
-            //string clipboardFile = LocalClipboard.GetClipboardFile();
-            //File.Delete(clipboardFile);
-
-            //// recursively delete each item folder if it exists
-            //if (Directory.Exists(ImageItem.FolderDir))
-            //    Directory.Delete(ImageItem.FolderDir, true);
-            //if (Directory.Exists(AudioItem.FolderDir))
-            //    Directory.Delete(AudioItem.FolderDir, true);
-            //if (Directory.Exists(CustomItem.FolderDir))
-            //    Directory.Delete(CustomItem.FolderDir, true);
-
-            //MsgLabel.Normal("All items cleared!");
-
             LocalClipboard.Clear();
         }
 
-        //private void UpdateDisplayedItems()
-        //{
-        //    ListBox.Items.Clear(); // clear ListBox
-
-        //    foreach (string key in KeyTextCollection)
-        //    {
-        //        // add to ListBox if the item's data type is allowed
-        //        if ((dispTextItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.Text)
-        //            || (dispFilesItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.FileDropList)
-        //            || (dispImagesItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.Image)
-        //            || (dispAudioItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.Audio)
-        //            || (dispCustomItem.Checked && ClipboardDict[key].Type == ClipboardItem.TypeEnum.Custom))
-        //            ListBox.Items.Add(key);
-        //    }
-        //}
-
-        private void DispTextItem_Click(object sender, EventArgs e)
+        private void RestrictTypes()
         {
-            LocalClipboard.OnTypeRestrictionClick(this.dispTextItem, this.dispFilesItem,
-                this.dispImagesItem, this.dispAudioItem, this.dispCustomItem);
+            // first, clear the visual part of the local clipboard
+            ListBox myListBox = LocalClipboard.GetListBox();
+            myListBox.Items.Clear();
+
+            // add each item back to the listbox if its type is allowed
+            bool allowType;
+            Dictionary<string, ClipboardItem> myDict = LocalClipboard.GetDict();
+            StringCollection myKeys = LocalClipboard.GetKeys();
+            foreach (string key in myKeys)
+            {
+                allowType = (this.showTextItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Text)
+                    || (this.showFilesItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.FileDropList)
+                    || (this.showImagesItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Image)
+                    || (this.showAudioItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Audio)
+                    || (this.showCustomItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Custom);
+
+                // if type is allowed, add to the listbox
+                if (allowType)
+                    myListBox.Items.Add(key);
+            }
+        }
+
+        private void ShowTextItem_Click(object sender, EventArgs e)
+        {
+            this.RestrictTypes();
 
             // notify the user of the change
-            if (dispTextItem.Checked)
+            if (showTextItem.Checked)
                 MsgLabel.Normal("Text items displayed!");
             else
                 MsgLabel.Normal("Text items hidden!");
         }
 
-        private void DispFilesItem_Click(object sender, EventArgs e)
+        private void ShowFilesItem_Click(object sender, EventArgs e)
         {
-            LocalClipboard.OnTypeRestrictionClick(this.dispTextItem, this.dispFilesItem,
-                this.dispImagesItem, this.dispAudioItem, this.dispCustomItem);
+            this.RestrictTypes();
 
             // notify the user of the change
-            if (dispFilesItem.Checked)
+            if (showFilesItem.Checked)
                 MsgLabel.Normal("File items displayed!");
             else
                 MsgLabel.Normal("File items hidden!");
         }
 
-        private void DispImagesItem_Click(object sender, EventArgs e)
+        private void ShowImagesItem_Click(object sender, EventArgs e)
         {
-            LocalClipboard.OnTypeRestrictionClick(this.dispTextItem, this.dispFilesItem,
-                this.dispImagesItem, this.dispAudioItem, this.dispCustomItem);
+            this.RestrictTypes();
 
             // notify the user of the change
-            if (dispImagesItem.Checked)
+            if (showImagesItem.Checked)
                 MsgLabel.Normal("Image items displayed!");
             else
                 MsgLabel.Normal("Image items hidden!");
         }
 
-        private void DispAudioItem_Click(object sender, EventArgs e)
+        private void ShowAudioItem_Click(object sender, EventArgs e)
         {
-            LocalClipboard.OnTypeRestrictionClick(this.dispTextItem, this.dispFilesItem,
-                this.dispImagesItem, this.dispAudioItem, this.dispCustomItem);
+            this.RestrictTypes();
 
             // notify the user of the change
-            if (dispAudioItem.Checked)
+            if (showAudioItem.Checked)
                 MsgLabel.Normal("Audio items displayed!");
             else
                 MsgLabel.Normal("Audio items hidden!");
         }
 
-        private void DispCustomItem_Click(object sender, EventArgs e)
+        private void ShowCustomItem_Click(object sender, EventArgs e)
         {
-            LocalClipboard.OnTypeRestrictionClick(this.dispTextItem, this.dispFilesItem,
-                this.dispImagesItem, this.dispAudioItem, this.dispCustomItem);
+            this.RestrictTypes();
 
             // notify the user of the change
-            if (dispCustomItem.Checked)
+            if (showCustomItem.Checked)
                 MsgLabel.Normal("Custom items displayed!");
             else
                 MsgLabel.Normal("Custom items hidden!");
@@ -469,13 +287,22 @@ namespace MultiPaste
             Application.Exit();
         }
 
+        //private void WinStartupItem_Click(object sender, EventArgs e)
+        //{
+        //    // update Windows startup process
+        //    UpdateWindowsStartup();
+
+        //    // update file
+        //    WriteConfigFile();
+        //}
+
         private void WinStartupItem_Click(object sender, EventArgs e)
         {
             // update Windows startup process
-            UpdateWindowsStartup();
+            myConfig.WinStartupRegistry();
 
-            // update file
-            WriteConfigFile();
+            // update CONFIG file
+            myConfig.UpdateFile();
         }
 
         private void HelpItem_Click(object sender, EventArgs e)
