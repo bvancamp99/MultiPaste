@@ -15,37 +15,7 @@ namespace MultiPaste
     {
         public const int CHAR_LIMIT = 100; // store max number of characters that can be displayed as a key in the dictionary
 
-        //private static ListBox myListBox; // store listbox that contains all copied items
-
         private readonly MainWindow mainWindow; // store MainWindow instance to access its variables
-
-        //private static Dictionary<string, ClipboardItem> myDict; // dict used for fast access of clipboard data
-        //private static StringCollection myKeys; // collection used to store keys to clipboard items
-        //private static bool handleClipboard; // bool to determine if we should handle clipboard changes
-
-        //private static string clipboardFile; // clipboard file directory
-        //private static string tempFile; // temp clipboard file, used when adding items from file on startup
-        //private static string imageFolder; // image folder directory
-        //private static string audioFolder; // audio folder directory
-        //private static string customFolder; // custom folder directory
-
-        //public MyClipboard(ListBox myListBox)
-        //{
-        //    MyClipboard.myListBox = myListBox;
-
-        //    MyClipboard.myDict = new Dictionary<string, ClipboardItem>();
-        //    MyClipboard.myKeys = new StringCollection();
-        //    MyClipboard.handleClipboard = true;
-
-        //    MyClipboard.clipboardFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CLIPBOARD");
-        //    MyClipboard.tempFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
-        //    MyClipboard.imageFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images");
-        //    MyClipboard.audioFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Audio");
-        //    MyClipboard.customFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Custom");
-
-        //    // read from CLIPBOARD file and write to local clipboard
-        //    this.FromFile();
-        //}
 
         public LocalClipboard(MainWindow mainWindow)
         {
@@ -102,79 +72,32 @@ namespace MultiPaste
         /// </summary>
         public string CustomFolder { get; }
 
-        //public ListBox GetListBox()
-        //{
-        //    return MyClipboard.myListBox;
-        //}
-
-        //// TODO: remove after figuring out Config.cs
-        //public static Dictionary<string, ClipboardItem> GetDict()
-        //{
-        //    return this.Dict;
-        //}
-
-        //// TODO: remove after figuring out Config.cs
-        //public static StringCollection GetKeys()
-        //{
-        //    return this.Keys;
-        //}
-
-        //public static bool GetHandleClipboard()
-        //{
-        //    return LocalClipboard.handleClipboard;
-        //}
-
-        //public static string GetClipboardFile()
-        //{
-        //    return this.ClipboardFile;
-        //}
-
-        //public static string GetTempFile()
-        //{
-        //    return this.TempFile;
-        //}
-
-        //public static string GetImageFolder()
-        //{
-        //    return this.ImageFolder;
-        //}
-
-        //public static string GetAudioFolder()
-        //{
-        //    return this.AudioFolder;
-        //}
-
-        //public static string GetCustomFolder()
-        //{
-        //    return this.CustomFolder;
-        //}
-
         public void OnClipboardChange()
         {
             if (Clipboard.ContainsText())
             {
                 string text = Clipboard.GetText();
-                TextItem myItem = new TextItem(this.mainWindow, text);
+                _ = new TextItem(this.mainWindow, text);
             }
             else if (Clipboard.ContainsFileDropList())
             {
                 StringCollection files = Clipboard.GetFileDropList();
-                FileItem myItem = new FileItem(this.mainWindow, files);
+                _ = new FileItem(this.mainWindow, files);
             }
             else if (Clipboard.ContainsImage())
             {
                 Image image = Clipboard.GetImage();
-                ImageItem myItem = new ImageItem(this.mainWindow, image);
+                _ = new ImageItem(this.mainWindow, image);
             }
             else if (Clipboard.ContainsAudio())
             {
                 Stream audio = Clipboard.GetAudioStream();
-                AudioItem myItem = new AudioItem(this.mainWindow, audio);
+                _ = new AudioItem(this.mainWindow, audio);
             }
             else
             {
                 IDataObject data = Clipboard.GetDataObject();
-                CustomItem myItem = new CustomItem(this.mainWindow, data);
+                _ = new CustomItem(this.mainWindow, data);
             }
         }
 
@@ -207,7 +130,7 @@ namespace MultiPaste
 
         public void Add(string key, ClipboardItem value)
         {
-            mainWindow.ListBox.Items.Insert(0, key);
+            this.mainWindow.ListBox.Items.Insert(0, key);
             this.Keys.Insert(0, key);
             this.Dict.Add(key, value);
         }
@@ -236,7 +159,7 @@ namespace MultiPaste
 
         public void Insert(string key, ClipboardItem value, int index)
         {
-            mainWindow.ListBox.Items.Insert(index, key);
+            this.mainWindow.ListBox.Items.Insert(index, key);
             this.Keys.Insert(index, key);
             this.Dict.Add(key, value);
 
@@ -266,7 +189,7 @@ namespace MultiPaste
             }
 
             // remove item by its key
-            mainWindow.ListBox.Items.Remove(key);
+            this.mainWindow.ListBox.Items.Remove(key);
             this.Keys.Remove(key);
             this.Dict.Remove(key);
 
@@ -307,11 +230,11 @@ namespace MultiPaste
             this.Remove(clipboardItem.KeyText, clipboardItem);
 
             // if there was an item located after the removed item, select that item
-            if (mainWindow.ListBox.Items.Count > index)
-                mainWindow.ListBox.SelectedIndex = index;
+            if (this.mainWindow.ListBox.Items.Count > index)
+                this.mainWindow.ListBox.SelectedIndex = index;
             // else select the item located before the removed item
             else
-                mainWindow.ListBox.SelectedIndex = index - 1;
+                this.mainWindow.ListBox.SelectedIndex = index - 1;
 
             // notify the user of the successful operation for 3 seconds
             MsgLabel.Normal("Item removed!");
@@ -331,7 +254,7 @@ namespace MultiPaste
         public void Clear()
         {
             // clear each data structure associated with the local clipboard
-            mainWindow.ListBox.Items.Clear();
+            this.mainWindow.ListBox.Items.Clear();
             this.Keys.Clear();
             this.Dict.Clear();
 
@@ -352,8 +275,8 @@ namespace MultiPaste
         public void OnKeyUp(KeyEventArgs e)
         {
             // vars regarding listbox data
-            int total = mainWindow.ListBox.Items.Count;
-            int current = mainWindow.ListBox.SelectedIndex;
+            int total = this.mainWindow.ListBox.Items.Count;
+            int current = this.mainWindow.ListBox.SelectedIndex;
 
             // base case 1: nothing in the clipboard, or current index is 0
             if (total == 0 || current == 0) return;
@@ -361,14 +284,14 @@ namespace MultiPaste
             // base case 2: no item is selected, or only one item exists
             if (current < 0 || total == 1)
             {
-                mainWindow.ListBox.SelectedIndex = 0;
+                this.mainWindow.ListBox.SelectedIndex = 0;
                 return;
             }
 
             // base case 3: shift isn't being pressed; move cursor up one index
             if (!e.Shift)
             {
-                mainWindow.ListBox.SelectedIndex--;
+                this.mainWindow.ListBox.SelectedIndex--;
                 return;
             }
 
@@ -383,14 +306,14 @@ namespace MultiPaste
 
             // move item to new index
             this.Move(clipboardItem.KeyText, clipboardItem, current);
-            mainWindow.ListBox.SelectedIndex = current;
+            this.mainWindow.ListBox.SelectedIndex = current;
         }
 
         public void OnKeyDown(KeyEventArgs e)
         {
             // vars regarding listbox data
-            int total = mainWindow.ListBox.Items.Count;
-            int current = mainWindow.ListBox.SelectedIndex;
+            int total = this.mainWindow.ListBox.Items.Count;
+            int current = this.mainWindow.ListBox.SelectedIndex;
 
             // base case 1: nothing in the clipboard, or current is at the last index
             if (total == 0 || current == total - 1) return;
@@ -398,14 +321,14 @@ namespace MultiPaste
             // base case 2: no item is selected, or only one item exists
             if (current < 0 || total == 1)
             {
-                mainWindow.ListBox.SelectedIndex = 0;
+                this.mainWindow.ListBox.SelectedIndex = 0;
                 return;
             }
 
             // base case 3: shift isn't being pressed; move cursor down one index
             if (!e.Shift)
             {
-                mainWindow.ListBox.SelectedIndex++;
+                this.mainWindow.ListBox.SelectedIndex++;
                 return;
             }
 
@@ -420,20 +343,20 @@ namespace MultiPaste
 
             // move item to new index
             this.Move(clipboardItem.KeyText, clipboardItem, current);
-            mainWindow.ListBox.SelectedIndex = current;
+            this.mainWindow.ListBox.SelectedIndex = current;
         }
 
         public void Copy()
         {
             // check for valid SelectedIndex val before continuing
-            if (mainWindow.ListBox.SelectedIndex < 0)
+            if (this.mainWindow.ListBox.SelectedIndex < 0)
                 return;
 
             // Windows clipboard will be changed in this method; we don't want it to be handled
             this.HandleClipboard = false;
 
             // store the selected item
-            string key = this.Keys[mainWindow.ListBox.SelectedIndex];
+            string key = this.Keys[this.mainWindow.ListBox.SelectedIndex];
             ClipboardItem clipboardItem = this.Dict[key];
 
             // store an error msg string that will notify the user if an error occurred
@@ -490,7 +413,8 @@ namespace MultiPaste
                         using (var stream = new FileStream(Path.Combine(this.CustomFolder,
                             clipboardItem.KeyText), FileMode.Open))
                         {
-                            data = new BinaryFormatter().Deserialize(stream);
+                            BinaryFormatter formatter = new BinaryFormatter();
+                            data = formatter.Deserialize(stream);
                         }
 
                         // set custom data to the Windows clipboard
@@ -535,23 +459,23 @@ namespace MultiPaste
                     switch (type)
                     {
                         case ClipboardItem.TypeEnum.Text:
-                            TextItem myTextItem = new TextItem(this.mainWindow, keyDiff, streamReader);
+                            _ = new TextItem(this.mainWindow, keyDiff, streamReader);
                             break;
 
                         case ClipboardItem.TypeEnum.FileDropList:
-                            FileItem myFileItem = new FileItem(this.mainWindow, keyDiff, streamReader);
+                            _ = new FileItem(this.mainWindow, keyDiff, streamReader);
                             break;
 
                         case ClipboardItem.TypeEnum.Image:
-                            ImageItem myImageItem = new ImageItem(this.mainWindow, keyDiff, streamReader);
+                            _ = new ImageItem(this.mainWindow, keyDiff, streamReader);
                             break;
 
                         case ClipboardItem.TypeEnum.Audio:
-                            AudioItem myAudioItem = new AudioItem(this.mainWindow, keyDiff, streamReader);
+                            _ = new AudioItem(this.mainWindow, keyDiff, streamReader);
                             break;
 
                         case ClipboardItem.TypeEnum.Custom:
-                            CustomItem myCustomItem = new CustomItem(this.mainWindow, keyDiff, streamReader);
+                            _ = new CustomItem(this.mainWindow, keyDiff, streamReader);
                             break;
                     }
                 }

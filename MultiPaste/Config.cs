@@ -14,30 +14,6 @@ namespace MultiPaste
     {
         private readonly MainWindow mainWindow; // store MainWindow instance to access its variables
 
-        //private static ToolStripMenuItem winStartup; // whether or not MultiPaste runs on Windows startup
-        //private static ToolStripMenuItem showText; // display/hide text items
-        //private static ToolStripMenuItem showFiles; // display/hide file items
-        //private static ToolStripMenuItem showImages; // display/hide image items
-        //private static ToolStripMenuItem showAudio; // display/hide audio items
-        //private static ToolStripMenuItem showCustom; // display/hide custom items
-
-        //private static string configFile; // config file directory
-
-        //public Config(MainWindow mainWindow)
-        //{
-        //    this.mainWindow.WinStartup = mainWindow.GetWinStartup();
-        //    Config.showText = mainWindow.GetShowText();
-        //    Config.showFiles = mainWindow.GetShowFiles();
-        //    Config.showImages = mainWindow.GetShowImages();
-        //    Config.showAudio = mainWindow.GetShowAudio();
-        //    Config.showCustom = mainWindow.GetShowCustom();
-
-        //    this.ConfigFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CONFIG");
-
-        //    // read from CONFIG file and update items accordingly
-        //    this.FromFile();
-        //}
-
         public Config(MainWindow mainWindow)
         {
             this.mainWindow = mainWindow;
@@ -49,11 +25,6 @@ namespace MultiPaste
         /// config file directory
         /// </summary>
         public string ConfigFile { get; }
-
-        //public static string GetConfigFile()
-        //{
-        //    return this.ConfigFile;
-        //}
 
         public void UpdateFile()
         {
@@ -67,30 +38,6 @@ namespace MultiPaste
                 fileStream.WriteByte(Convert.ToByte(this.mainWindow.WinStartup.Checked));
             }
         }
-
-        //public void RestrictTypes()
-        //{
-        //    // first, clear the visual part of the local clipboard
-        //    ListBox myListBox = this.mainWindow.ListBox;
-        //    myListBox.Items.Clear();
-
-        //    // add each item back to the listbox if its type is allowed
-        //    bool allowType;
-        //    Dictionary<string, ClipboardItem> myDict = this.mainWindow.Clipboard.Dict;
-        //    StringCollection myKeys = this.mainWindow.Clipboard.Keys;
-        //    foreach (string key in myKeys)
-        //    {
-        //        allowType = (this.mainWindow.ShowText.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Text)
-        //            || (this.mainWindow.ShowFiles.Checked && myDict[key].Type == ClipboardItem.TypeEnum.FileDropList)
-        //            || (this.mainWindow.ShowImages.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Image)
-        //            || (this.mainWindow.ShowAudio.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Audio)
-        //            || (this.mainWindow.ShowCustom.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Custom);
-
-        //        // if type is allowed, add to the listbox
-        //        if (allowType)
-        //            myListBox.Items.Add(key);
-        //    }
-        //}
 
         public void WinStartupRegistry()
         {

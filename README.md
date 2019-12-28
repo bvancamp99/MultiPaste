@@ -19,8 +19,9 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Improve </h3>
 <ul>
+  <li>Could potentially conflate IsEquivalent on ImageItem, AudioItem, and CustomItem.  Would need to create file before comparing the ClipboardItems (if possible).  Then we would compare byte length of the files first, then maybe do more checking if that bool returns true (although byte-by-byte checking could become VERY slow).</li>
   <li>Consider using discard _ instead of making variables for the ClipboardItems.  Make sure this doesn't mess with functionality though--worried that the garbage collector will try to dispose of it.  Maybe not though since each ClipboardItem is tied to LocalClipboard.Dict</li>
-  <li>Class for event handling of MainWindow</li>
+  <li>Class for event handling of MainWindow.  Might be weird because auto-generated code couldn't access this new class.  Possible implementation could be making another partial class for MainWindow.</li>
   <li>Maybe move HandleClipboard bool to GlobalEventHook.cs</li>
   <li>Not sure if this would be possible, but making MainWindow static would make a lot of sense.  Then we don't have to pass copies of its instance around to every class.  Issue is then it can't inherit from the Form class (which isn't static).</li>
   <li>ushort -> int; simpler that way</li>

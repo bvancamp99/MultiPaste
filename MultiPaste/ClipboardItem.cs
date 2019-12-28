@@ -37,16 +37,24 @@ namespace MultiPaste
             Custom
         }
 
+        /// <summary>
         /// clipboard data type of the item
+        /// </summary>
         public TypeEnum Type { get; }
 
+        /// <summary>
         /// store the key text that identifies the item
+        /// </summary>
         public string KeyText { get; protected set; }
 
+        /// <summary>
         /// in case there would be other items with the same KeyText, this ushort differentiates the items for the user
+        /// </summary>
         public ushort KeyDiff { get; protected set; }
 
+        /// <summary>
         /// store the chars that represent this item in the CLIPBOARD file
+        /// </summary>
         public string FileChars { get; protected set; }
 
         protected bool SetKeyDiff()
@@ -54,7 +62,7 @@ namespace MultiPaste
             // calculate KeyDiff so that we can differentiate the items with duplicate key text
             StringCollection myKeys = mainWindow.Clipboard.Keys;
             Dictionary<string, ClipboardItem> myDict = mainWindow.Clipboard.Dict;
-            for (string key = KeyText; myDict.ContainsKey(key); key = KeyText + KeyDiff)
+            for (string key = this.KeyText; myDict.ContainsKey(key); key = this.KeyText + this.KeyDiff)
             {
                 // store item with the same key
                 ClipboardItem duplicateKeyItem = myDict[key];
@@ -71,7 +79,7 @@ namespace MultiPaste
                     return false;
 
                 // if this point is reached, remove the old item and break from the loop
-                mainWindow.Clipboard.Remove(duplicateKeyItem.KeyText, duplicateKeyItem);
+                this.mainWindow.Clipboard.Remove(duplicateKeyItem.KeyText, duplicateKeyItem);
                 break;
             }
 
@@ -80,8 +88,9 @@ namespace MultiPaste
 
         /// <summary>
         /// All child classes of ClipboardItem must implement IsEquivalent.
-        /// This method determines if the param is equivalent to the current
-        /// ClipboardItem instance.
+        /// 
+        /// This method determines if the param is functionally equivalent to
+        /// the current ClipboardItem instance.
         /// </summary>
         /// <param name="duplicateKeyItem"></param>
         /// <returns>whether or not the ClipboardItems are equivalent</returns>
@@ -97,22 +106,23 @@ namespace MultiPaste
                 return;
 
             // store param str
-            Text = text;
+            this.Text = text;
 
             // set beginning part of KeyText
-            KeyText = "Text: ";
+            this.KeyText = "Text: ";
 
             // append to KeyText given Text
-            if (Text.Length > LocalClipboard.CHAR_LIMIT - KeyText.Length)
-                KeyText += Text.Substring(0, LocalClipboard.CHAR_LIMIT - KeyText.Length) + "...";
+            if (this.Text.Length > LocalClipboard.CHAR_LIMIT - this.KeyText.Length)
+                this.KeyText += Text.Substring(0, LocalClipboard.CHAR_LIMIT - this.KeyText.Length) + "...";
             else
-                KeyText += Text;
+                this.KeyText += Text;
 
             // if setting KeyDiff returns false, then there is an equivalent item at index 0
-            if (!SetKeyDiff()) return;
+            if (!this.SetKeyDiff()) return;
 
             // add KeyDiff to KeyText if needed
-            if (KeyDiff != 0) KeyText += KeyDiff;
+            if (this.KeyDiff != 0) 
+                this.KeyText += this.KeyDiff;
 
             /// Char order:
             /// 
@@ -121,12 +131,11 @@ namespace MultiPaste
             /// 3. Text.Length
             /// 4. Text
             /// 
-
-            FileChars = (char)Type + KeyDiff.ToString() + Environment.NewLine +
-                Text.Length.ToString() + Environment.NewLine + Text;
+            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine +
+                this.Text.Length.ToString() + Environment.NewLine + this.Text;
 
             // add to local clipboard with CLIPBOARD file
-            mainWindow.Clipboard.AddWithFile(this.KeyText, this);
+            this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
             MsgLabel.Normal("Text item added!");
         }
@@ -142,19 +151,20 @@ namespace MultiPaste
             streamReader.Read(textArr, 0, textSize);
 
             // store char array as Text
-            Text = new string(textArr);
+            this.Text = new string(textArr);
 
             // set beginning part of KeyText
-            KeyText = "Text: ";
+            this.KeyText = "Text: ";
 
             // append to KeyText given Text
-            if (Text.Length > LocalClipboard.CHAR_LIMIT - KeyText.Length)
-                KeyText += Text.Substring(0, LocalClipboard.CHAR_LIMIT - KeyText.Length) + "...";
+            if (this.Text.Length > LocalClipboard.CHAR_LIMIT - this.KeyText.Length)
+                this.KeyText += this.Text.Substring(0, LocalClipboard.CHAR_LIMIT - this.KeyText.Length) + "...";
             else
-                KeyText += Text;
+                this.KeyText += this.Text;
 
             // add KeyDiff to KeyText if needed
-            if (KeyDiff != 0) KeyText += KeyDiff;
+            if (this.KeyDiff != 0) 
+                this.KeyText += this.KeyDiff;
 
             /// Char order:
             /// 
@@ -164,20 +174,30 @@ namespace MultiPaste
             /// 4. Text
             /// 
 
-            FileChars = (char)Type + KeyDiff.ToString() + Environment.NewLine +
-                Text.Length.ToString() + Environment.NewLine + Text;
+            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine +
+                this.Text.Length.ToString() + Environment.NewLine + this.Text;
 
             // add to local clipboard
-            mainWindow.Clipboard.Add(this.KeyText, this);
+            this.mainWindow.Clipboard.Add(this.KeyText, this);
         }
 
+        /// <summary>
         /// store the text of the item
+        /// </summary>
         public string Text { get; }
 
+        /// <summary>
+        /// All child classes of ClipboardItem must implement IsEquivalent.
+        /// 
+        /// This method determines if the param is functionally equivalent to
+        /// the current ClipboardItem instance.
+        /// </summary>
+        /// <param name="duplicateKeyItem"></param>
+        /// <returns>whether or not the ClipboardItems are equivalent</returns>
         protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
         {
             return duplicateKeyItem.Type == TypeEnum.Text
-                && Text == (duplicateKeyItem as TextItem).Text;
+                && this.Text == (duplicateKeyItem as TextItem).Text;
         }
     }
 
@@ -190,24 +210,25 @@ namespace MultiPaste
                 return;
 
             // get file drop list from param
-            FileDropList = fileDropList;
+            this.FileDropList = fileDropList;
 
             // if 1 file was copied, KeyText will store FileDropList[0]'s filename
-            if (FileDropList.Count == 1)
-                KeyText = "File: " + Path.GetFileName(FileDropList[0]);
+            if (this.FileDropList.Count == 1)
+                this.KeyText = "File: " + Path.GetFileName(this.FileDropList[0]);
             // else KeyText will store FileDropList[0]'s filename + how many more files there are
             else
-                KeyText = "Files: " + Path.GetFileName(FileDropList[0]) + " + " + (FileDropList.Count - 1) + " more";
+                this.KeyText = "Files: " + Path.GetFileName(this.FileDropList[0]) + " + " + (this.FileDropList.Count - 1) + " more";
 
             // shorten KeyText to fit the character limit if needed
-            if (KeyText.Length > LocalClipboard.CHAR_LIMIT)
-                KeyText = KeyText.Substring(0, LocalClipboard.CHAR_LIMIT) + "...";
+            if (this.KeyText.Length > LocalClipboard.CHAR_LIMIT)
+                this.KeyText = this.KeyText.Substring(0, LocalClipboard.CHAR_LIMIT) + "...";
 
             // if setting KeyDiff returns false, then there is an equivalent item at index 0
-            if (!SetKeyDiff()) return;
+            if (!this.SetKeyDiff()) return;
 
             // add KeyDiff to KeyText if needed
-            if (KeyDiff != 0) KeyText += KeyDiff;
+            if (this.KeyDiff != 0) 
+                this.KeyText += this.KeyDiff;
 
             /// Char order:
             /// 
@@ -217,14 +238,14 @@ namespace MultiPaste
             /// 4. FileDropList
             /// 
 
-            FileChars = (char)Type + KeyDiff.ToString() + Environment.NewLine +
-                FileDropList.Count.ToString() + Environment.NewLine;
+            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine +
+                this.FileDropList.Count.ToString() + Environment.NewLine;
 
-            foreach (string dir in FileDropList)
-                FileChars += dir + Environment.NewLine;
+            foreach (string fileDir in this.FileDropList)
+                this.FileChars += fileDir + Environment.NewLine;
 
             // add to local clipboard with CLIPBOARD file
-            mainWindow.Clipboard.AddWithFile(this.KeyText, this);
+            this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
             MsgLabel.Normal("File item added!");
         }
@@ -236,23 +257,24 @@ namespace MultiPaste
             int listCount = int.Parse(streamReader.ReadLine());
 
             // read each string into FileDropList
-            FileDropList = new StringCollection();
+            this.FileDropList = new StringCollection();
             for (int i = 0; i < listCount; i++)
-                FileDropList.Add(streamReader.ReadLine());
+                this.FileDropList.Add(streamReader.ReadLine());
 
             // if 1 file was copied, KeyText will store FileDropList[0]'s filename
-            if (FileDropList.Count == 1)
-                KeyText = "File: " + Path.GetFileName(FileDropList[0]);
+            if (this.FileDropList.Count == 1)
+                this.KeyText = "File: " + Path.GetFileName(this.FileDropList[0]);
             // else KeyText will store FileDropList[0]'s filename + how many more files there are
             else
-                KeyText = "Files: " + Path.GetFileName(FileDropList[0]) + " + " + (FileDropList.Count - 1) + " more";
+                this.KeyText = "Files: " + Path.GetFileName(this.FileDropList[0]) + " + " + (this.FileDropList.Count - 1) + " more";
 
             // shorten KeyText to fit the character limit if needed
-            if (KeyText.Length > LocalClipboard.CHAR_LIMIT)
-                KeyText = KeyText.Substring(0, LocalClipboard.CHAR_LIMIT) + "...";
+            if (this.KeyText.Length > LocalClipboard.CHAR_LIMIT)
+                this.KeyText = this.KeyText.Substring(0, LocalClipboard.CHAR_LIMIT) + "...";
 
             // add KeyDiff to KeyText if needed
-            if (KeyDiff != 0) KeyText += KeyDiff;
+            if (this.KeyDiff != 0) 
+                this.KeyText += this.KeyDiff;
 
             /// Char order:
             /// 
@@ -262,19 +284,29 @@ namespace MultiPaste
             /// 4. FileDropList
             /// 
 
-            FileChars = (char)Type + KeyDiff.ToString() + Environment.NewLine +
-                FileDropList.Count.ToString() + Environment.NewLine;
+            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine +
+                this.FileDropList.Count.ToString() + Environment.NewLine;
 
-            foreach (string dir in FileDropList)
-                FileChars += dir + Environment.NewLine;
+            foreach (string fileDir in this.FileDropList)
+                this.FileChars += fileDir + Environment.NewLine;
 
             // add to local clipboard
-            mainWindow.Clipboard.Add(this.KeyText, this);
+            this.mainWindow.Clipboard.Add(this.KeyText, this);
         }
 
+        /// <summary>
         /// store the file drop list originally received from the Clipboard
+        /// </summary>
         public StringCollection FileDropList { get; }
 
+        /// <summary>
+        /// All child classes of ClipboardItem must implement IsEquivalent.
+        /// 
+        /// This method determines if the param is functionally equivalent to
+        /// the current ClipboardItem instance.
+        /// </summary>
+        /// <param name="duplicateKeyItem"></param>
+        /// <returns>whether or not the ClipboardItems are equivalent</returns>
         protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
         {
             // check for valid type
@@ -282,13 +314,13 @@ namespace MultiPaste
                 return false;
 
             // check for equivalent item count
-            if (FileDropList.Count != (duplicateKeyItem as FileItem).FileDropList.Count)
+            if (this.FileDropList.Count != (duplicateKeyItem as FileItem).FileDropList.Count)
                 return false;
 
             // check equivalency of each filename
-            for (int i = 0; i < FileDropList.Count; i++)
+            for (int i = 0; i < this.FileDropList.Count; i++)
             {
-                if (FileDropList[i] != (duplicateKeyItem as FileItem).FileDropList[i])
+                if (this.FileDropList[i] != (duplicateKeyItem as FileItem).FileDropList[i])
                     return false;
             }
 
@@ -307,23 +339,24 @@ namespace MultiPaste
                 if (image == null) return;
 
                 // copy size struct of the image
-                Size = image.Size;
+                this.Size = image.Size;
 
                 // set KeyText using image dimensions
-                KeyText = "Image (" + Size.Width + " x " + Size.Height + ")";
+                this.KeyText = "Image (" + this.Size.Width + " x " + this.Size.Height + ")";
 
                 // if setting KeyDiff returns false, then there is an equivalent item at index 0
-                if (!SetKeyDiff()) return;
+                if (!this.SetKeyDiff()) return;
 
                 // add KeyDiff to KeyText if needed
-                if (KeyDiff != 0) KeyText += KeyDiff;
+                if (this.KeyDiff != 0) 
+                    this.KeyText += this.KeyDiff;
 
                 // create Images folder if it's missing
                 string imageFolder = this.mainWindow.Clipboard.ImageFolder;
                 Directory.CreateDirectory(imageFolder);
 
                 // create image file in the Images folder
-                image.Save(Path.Combine(imageFolder, KeyText));
+                image.Save(Path.Combine(imageFolder, this.KeyText));
             }
 
             /// Char order:
@@ -334,11 +367,12 @@ namespace MultiPaste
             /// 4. Size.Height
             /// 
 
-            FileChars = (char)Type + KeyDiff.ToString() + Environment.NewLine + Size.Width.ToString() + Environment.NewLine +
-                Size.Height.ToString() + Environment.NewLine;
+            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine +
+                this.Size.Width.ToString() + Environment.NewLine + this.Size.Height.ToString() + 
+                Environment.NewLine;
 
             // add to local clipboard with CLIPBOARD file
-            mainWindow.Clipboard.AddWithFile(this.KeyText, this);
+            this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
             MsgLabel.Normal("Image item added!");
         }
@@ -353,13 +387,14 @@ namespace MultiPaste
             int height = int.Parse(streamReader.ReadLine());
 
             // init Size with width and height args
-            Size = new Size(width, height);
+            this.Size = new Size(width, height);
 
             // set KeyText using image dimensions
-            KeyText = "Image (" + Size.Width + " x " + Size.Height + ")";
+            this.KeyText = "Image (" + this.Size.Width + " x " + this.Size.Height + ")";
 
             // add KeyDiff to KeyText if needed
-            if (KeyDiff != 0) KeyText += KeyDiff;
+            if (this.KeyDiff != 0) 
+                this.KeyText += this.KeyDiff;
 
             /// Char order:
             /// 
@@ -369,25 +404,36 @@ namespace MultiPaste
             /// 4. Size.Height
             /// 
 
-            FileChars = (char)Type + KeyDiff.ToString() + Environment.NewLine + Size.Width.ToString() + Environment.NewLine +
-                Size.Height.ToString() + Environment.NewLine;
+            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine + 
+                this.Size.Width.ToString() + Environment.NewLine + this.Size.Height.ToString() + 
+                Environment.NewLine;
 
             // if image file is missing, remove item data from the temp CLIPBOARD file and return
             string imageFolder = this.mainWindow.Clipboard.ImageFolder;
-            if (!File.Exists(Path.Combine(imageFolder, KeyText)))
+            if (!File.Exists(Path.Combine(imageFolder, this.KeyText)))
             {
                 string tempFile = this.mainWindow.Clipboard.TempFile;
-                File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(FileChars, ""));
+                File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(this.FileChars, ""));
                 return;
             }
 
             // add to local clipboard
-            mainWindow.Clipboard.Add(this.KeyText, this);
+            this.mainWindow.Clipboard.Add(this.KeyText, this);
         }
 
+        /// <summary>
         /// store pixel dimensions of the image linked to this item
+        /// </summary>
         public Size Size { get; }
 
+        /// <summary>
+        /// All child classes of ClipboardItem must implement IsEquivalent.
+        /// 
+        /// This method determines if the param is functionally equivalent to
+        /// the current ClipboardItem instance.
+        /// </summary>
+        /// <param name="duplicateKeyItem"></param>
+        /// <returns>whether or not the ClipboardItems are equivalent</returns>
         protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
         {
             // check for valid type
@@ -395,7 +441,7 @@ namespace MultiPaste
                 return false;
 
             // check for equivalent image dimensions
-            if (!Size.Equals((duplicateKeyItem as ImageItem).Size))
+            if (!this.Size.Equals((duplicateKeyItem as ImageItem).Size))
                 return false;
 
             // TODO: finish algorithm to accurately compare images
@@ -413,7 +459,7 @@ namespace MultiPaste
                 if (audioStream == null) return;
 
                 // store length in bytes of the stream
-                ByteLength = audioStream.Length;
+                this.ByteLength = audioStream.Length;
 
                 // byteRate is stored at byte offset 28 of the WAVE file
                 byte[] byteRateBuffer = new byte[4];
@@ -435,21 +481,22 @@ namespace MultiPaste
                 fileLengthSeconds %= 60;
 
                 // calculate KeyText given the data
-                KeyText = "Audio (" + (fileLengthHours == 0 ? "" : fileLengthHours + "h:") + (fileLengthMinutes
+                this.KeyText = "Audio (" + (fileLengthHours == 0 ? "" : fileLengthHours + "h:") + (fileLengthMinutes
                     == 0 ? "" : fileLengthMinutes + "m:") + fileLengthSeconds + "s)";
 
                 // if setting KeyDiff returns false, then there is an equivalent item at index 0
-                if (!SetKeyDiff()) return;
+                if (!this.SetKeyDiff()) return;
 
                 // add KeyDiff to KeyText if needed
-                if (KeyDiff != 0) KeyText += KeyDiff;
+                if (this.KeyDiff != 0) 
+                    this.KeyText += this.KeyDiff;
 
                 // create Audio folder if it's missing
                 string audioFolder = this.mainWindow.Clipboard.AudioFolder;
                 Directory.CreateDirectory(audioFolder);
 
                 // create audio file in the Audio folder
-                using (var fileStream = File.Create(Path.Combine(audioFolder, KeyText)))
+                using (var fileStream = File.Create(Path.Combine(audioFolder, this.KeyText)))
                 {
                     audioStream.Seek(0, SeekOrigin.Begin);
                     audioStream.CopyTo(fileStream);
@@ -464,11 +511,11 @@ namespace MultiPaste
             /// 4. KeyText
             /// 
 
-            FileChars = (char)Type + KeyDiff.ToString() + Environment.NewLine + ByteLength.ToString() + Environment.NewLine
-                + KeyText + Environment.NewLine;
+            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine + 
+                this.ByteLength.ToString() + Environment.NewLine + this.KeyText + Environment.NewLine;
 
             // add to local clipboard with CLIPBOARD file
-            mainWindow.Clipboard.AddWithFile(this.KeyText, this);
+            this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
             MsgLabel.Normal("Audio item added!");
         }
@@ -477,8 +524,8 @@ namespace MultiPaste
             : base(mainWindow, TypeEnum.Audio, keyDiff)
         {
             // retrieving ByteLength and KeyText from the stream
-            ByteLength = long.Parse(streamReader.ReadLine());
-            KeyText = streamReader.ReadLine();
+            this.ByteLength = long.Parse(streamReader.ReadLine());
+            this.KeyText = streamReader.ReadLine();
 
             /// Char order:
             /// 
@@ -488,29 +535,39 @@ namespace MultiPaste
             /// 4. KeyText
             /// 
 
-            FileChars = (char)Type + KeyDiff.ToString() + Environment.NewLine + ByteLength.ToString() + Environment.NewLine
-                + KeyText + Environment.NewLine;
+            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine + 
+                this.ByteLength.ToString() + Environment.NewLine + this.KeyText + Environment.NewLine;
 
             // if audio file is missing, remove item data from the temp CLIPBOARD file and return
             string audioFolder = this.mainWindow.Clipboard.AudioFolder;
-            if (!File.Exists(Path.Combine(audioFolder, KeyText)))
+            if (!File.Exists(Path.Combine(audioFolder, this.KeyText)))
             {
                 string tempFile = this.mainWindow.Clipboard.TempFile;
-                File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(FileChars, ""));
+                File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(this.FileChars, ""));
                 return;
             }
 
             // add to local clipboard
-            mainWindow.Clipboard.Add(this.KeyText, this);
+            this.mainWindow.Clipboard.Add(this.KeyText, this);
         }
 
+        /// <summary>
         /// store length in bytes of the audio stream
+        /// </summary>
         public long ByteLength { get; }
 
+        /// <summary>
+        /// All child classes of ClipboardItem must implement IsEquivalent.
+        /// 
+        /// This method determines if the param is functionally equivalent to
+        /// the current ClipboardItem instance.
+        /// </summary>
+        /// <param name="duplicateKeyItem"></param>
+        /// <returns>whether or not the ClipboardItems are equivalent</returns>
         protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
         {
-            return duplicateKeyItem.Type == TypeEnum.Audio
-                && ByteLength == (duplicateKeyItem as AudioItem).ByteLength;
+            return duplicateKeyItem.Type == TypeEnum.Audio && 
+                this.ByteLength == (duplicateKeyItem as AudioItem).ByteLength;
         }
     }
 
@@ -522,7 +579,7 @@ namespace MultiPaste
             if (dataObject == null) return;
 
             // set to null before doing checks
-            WritableFormat = null;
+            this.WritableFormat = null;
 
             // store supported formats of dataObject
             string[] formats = dataObject.GetFormats();
@@ -536,31 +593,32 @@ namespace MultiPaste
                 // store the first format whose data is serializable, then break
                 if (dataObject.GetData(format).GetType().IsSerializable)
                 {
-                    WritableFormat = format;
+                    this.WritableFormat = format;
                     break;
                 }
             }
 
             // if no formats are writable, then we can't add this item
-            if (WritableFormat == null) return;
+            if (this.WritableFormat == null) return;
 
             // set KeyText using WritableFormat
-            KeyText = "Custom (" + WritableFormat + ")";
+            this.KeyText = "Custom (" + this.WritableFormat + ")";
 
             // if setting KeyDiff returns false, then there is an equivalent item at index 0
-            if (!SetKeyDiff()) return;
+            if (!this.SetKeyDiff()) return;
 
             // add KeyDiff to KeyText if needed
-            if (KeyDiff != 0) KeyText += KeyDiff;
+            if (this.KeyDiff != 0) 
+                this.KeyText += this.KeyDiff;
 
             // create folder if it's missing
             string customFolder = this.mainWindow.Clipboard.CustomFolder;
             Directory.CreateDirectory(customFolder);
 
             // create file in Custom folder with dataObject
-            using (var fileStream = File.Create(Path.Combine(customFolder, KeyText)))
+            using (var fileStream = File.Create(Path.Combine(customFolder, this.KeyText)))
             {
-                new BinaryFormatter().Serialize(fileStream, dataObject.GetData(WritableFormat));
+                new BinaryFormatter().Serialize(fileStream, dataObject.GetData(this.WritableFormat));
             }
 
             /// Char order:
@@ -570,10 +628,11 @@ namespace MultiPaste
             /// 3. WritableFormat
             /// 
 
-            FileChars = (char)Type + KeyDiff.ToString() + Environment.NewLine + WritableFormat + Environment.NewLine;
+            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine + 
+                this.WritableFormat + Environment.NewLine;
 
             // add to local clipboard with CLIPBOARD file
-            mainWindow.Clipboard.AddWithFile(this.KeyText, this);
+            this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
             MsgLabel.Normal("Custom item added!");
         }
@@ -582,13 +641,14 @@ namespace MultiPaste
             : base(mainWindow, TypeEnum.Custom, keyDiff)
         {
             // retrieving WritableFormat from the stream
-            WritableFormat = streamReader.ReadLine();
+            this.WritableFormat = streamReader.ReadLine();
 
             // set KeyText using WritableFormat
-            KeyText = "Custom (" + WritableFormat + ")";
+            this.KeyText = "Custom (" + this.WritableFormat + ")";
 
             // add KeyDiff to KeyText if needed
-            if (KeyDiff != 0) KeyText += KeyDiff;
+            if (this.KeyDiff != 0) 
+                this.KeyText += this.KeyDiff;
 
             /// Char order:
             /// 
@@ -601,10 +661,10 @@ namespace MultiPaste
 
             // if custom file is missing, remove item data from the temp CLIPBOARD file and return
             string customFolder = this.mainWindow.Clipboard.CustomFolder;
-            if (!File.Exists(Path.Combine(customFolder, KeyText)))
+            if (!File.Exists(Path.Combine(customFolder, this.KeyText)))
             {
                 string tempFile = this.mainWindow.Clipboard.TempFile;
-                File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(FileChars, ""));
+                File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(this.FileChars, ""));
                 return;
             }
 
@@ -612,9 +672,19 @@ namespace MultiPaste
             mainWindow.Clipboard.Add(this.KeyText, this);
         }
 
+        /// <summary>
         /// store format whose data is serializable, i.e. can be written to the CLIPBOARD file
+        /// </summary>
         public string WritableFormat { get; private set; }
 
+        /// <summary>
+        /// All child classes of ClipboardItem must implement IsEquivalent.
+        /// 
+        /// This method determines if the param is functionally equivalent to
+        /// the current ClipboardItem instance.
+        /// </summary>
+        /// <param name="duplicateKeyItem"></param>
+        /// <returns>whether or not the ClipboardItems are equivalent</returns>
         protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
         {
             // TODO: implement method
