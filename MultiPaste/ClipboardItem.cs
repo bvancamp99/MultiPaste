@@ -10,18 +10,24 @@ namespace MultiPaste
 {
     abstract class ClipboardItem
     {
-        public ClipboardItem(TypeEnum type)
+        protected readonly MainWindow mainWindow; // store MainWindow instance to access its variables
+
+        public ClipboardItem(MainWindow mainWindow, TypeEnum type)
         {
+            this.mainWindow = mainWindow;
             this.Type = type;
         }
 
-        public ClipboardItem(TypeEnum type, ushort keyDiff)
+        public ClipboardItem(MainWindow mainWindow, TypeEnum type, ushort keyDiff)
         {
+            this.mainWindow = mainWindow;
             this.Type = type;
             this.KeyDiff = keyDiff;
         }
 
-        /// this enumerator defines the possible clipboard data types
+        /// <summary>
+        /// defines the possible clipboard data types
+        /// </summary>
         public enum TypeEnum : byte
         {
             Text,
@@ -46,8 +52,8 @@ namespace MultiPaste
         protected bool SetKeyDiff()
         {
             // calculate KeyDiff so that we can differentiate the items with duplicate key text
-            StringCollection myKeys = LocalClipboard.GetKeys();
-            Dictionary<string, ClipboardItem> myDict = LocalClipboard.GetDict();
+            StringCollection myKeys = mainWindow.Clipboard.Keys;
+            Dictionary<string, ClipboardItem> myDict = mainWindow.Clipboard.Dict;
             for (string key = KeyText; myDict.ContainsKey(key); key = KeyText + KeyDiff)
             {
                 // store item with the same key
@@ -65,7 +71,7 @@ namespace MultiPaste
                     return false;
 
                 // if this point is reached, remove the old item and break from the loop
-                LocalClipboard.Remove(duplicateKeyItem.KeyText, duplicateKeyItem);
+                mainWindow.Clipboard.Remove(duplicateKeyItem.KeyText, duplicateKeyItem);
                 break;
             }
 
@@ -84,7 +90,7 @@ namespace MultiPaste
 
     class TextItem : ClipboardItem
     {
-        public TextItem(string text) : base(TypeEnum.Text)
+        public TextItem(MainWindow mainWindow, string text) : base(mainWindow, TypeEnum.Text)
         {
             // ensure param str is valid before continuing
             if (text == null || text.Length == 0)
@@ -120,13 +126,13 @@ namespace MultiPaste
                 Text.Length.ToString() + Environment.NewLine + Text;
 
             // add to local clipboard with CLIPBOARD file
-            LocalClipboard.AddWithFile(this.KeyText, this);
+            mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
             MsgLabel.Normal("Text item added!");
         }
 
-        public TextItem(ushort keyDiff, StreamReader streamReader)
-            : base(TypeEnum.Text, keyDiff)
+        public TextItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
+            : base(mainWindow, TypeEnum.Text, keyDiff)
         {
             // retrieve number of chars in Text
             int textSize = int.Parse(streamReader.ReadLine());
@@ -162,7 +168,7 @@ namespace MultiPaste
                 Text.Length.ToString() + Environment.NewLine + Text;
 
             // add to local clipboard
-            LocalClipboard.Add(this.KeyText, this);
+            mainWindow.Clipboard.Add(this.KeyText, this);
         }
 
         /// store the text of the item
@@ -177,7 +183,7 @@ namespace MultiPaste
 
     class FileItem : ClipboardItem
     {
-        public FileItem(StringCollection fileDropList) : base(TypeEnum.FileDropList)
+        public FileItem(MainWindow mainWindow, StringCollection fileDropList) : base(mainWindow, TypeEnum.FileDropList)
         {
             // ensure param is valid before continuing
             if (fileDropList == null || fileDropList.Count == 0)
@@ -218,13 +224,13 @@ namespace MultiPaste
                 FileChars += dir + Environment.NewLine;
 
             // add to local clipboard with CLIPBOARD file
-            LocalClipboard.AddWithFile(this.KeyText, this);
+            mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
             MsgLabel.Normal("File item added!");
         }
 
-        public FileItem(ushort keyDiff, StreamReader streamReader)
-            : base(TypeEnum.FileDropList, keyDiff)
+        public FileItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
+            : base(mainWindow, TypeEnum.FileDropList, keyDiff)
         {
             // retrieve number of strings in FileDropList
             int listCount = int.Parse(streamReader.ReadLine());
@@ -263,7 +269,7 @@ namespace MultiPaste
                 FileChars += dir + Environment.NewLine;
 
             // add to local clipboard
-            LocalClipboard.Add(this.KeyText, this);
+            mainWindow.Clipboard.Add(this.KeyText, this);
         }
 
         /// store the file drop list originally received from the Clipboard
@@ -293,7 +299,7 @@ namespace MultiPaste
 
     class ImageItem : ClipboardItem
     {
-        public ImageItem(Image image) : base(TypeEnum.Image)
+        public ImageItem(MainWindow mainWindow, Image image) : base(mainWindow, TypeEnum.Image)
         {
             using (image)
             {
@@ -313,7 +319,7 @@ namespace MultiPaste
                 if (KeyDiff != 0) KeyText += KeyDiff;
 
                 // create Images folder if it's missing
-                string imageFolder = LocalClipboard.GetImageFolder();
+                string imageFolder = this.mainWindow.Clipboard.ImageFolder;
                 Directory.CreateDirectory(imageFolder);
 
                 // create image file in the Images folder
@@ -332,13 +338,13 @@ namespace MultiPaste
                 Size.Height.ToString() + Environment.NewLine;
 
             // add to local clipboard with CLIPBOARD file
-            LocalClipboard.AddWithFile(this.KeyText, this);
+            mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
             MsgLabel.Normal("Image item added!");
         }
 
-        public ImageItem(ushort keyDiff, StreamReader streamReader)
-            : base(TypeEnum.Image, keyDiff)
+        public ImageItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
+            : base(mainWindow, TypeEnum.Image, keyDiff)
         {
             // retrieve width int
             int width = int.Parse(streamReader.ReadLine());
@@ -367,16 +373,16 @@ namespace MultiPaste
                 Size.Height.ToString() + Environment.NewLine;
 
             // if image file is missing, remove item data from the temp CLIPBOARD file and return
-            string imageFolder = LocalClipboard.GetImageFolder();
+            string imageFolder = this.mainWindow.Clipboard.ImageFolder;
             if (!File.Exists(Path.Combine(imageFolder, KeyText)))
             {
-                string tempFile = LocalClipboard.GetTempFile();
+                string tempFile = this.mainWindow.Clipboard.TempFile;
                 File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(FileChars, ""));
                 return;
             }
 
             // add to local clipboard
-            LocalClipboard.Add(this.KeyText, this);
+            mainWindow.Clipboard.Add(this.KeyText, this);
         }
 
         /// store pixel dimensions of the image linked to this item
@@ -399,7 +405,7 @@ namespace MultiPaste
 
     class AudioItem : ClipboardItem
     {
-        public AudioItem(Stream audioStream) : base(TypeEnum.Audio)
+        public AudioItem(MainWindow mainWindow, Stream audioStream) : base(mainWindow, TypeEnum.Audio)
         {
             using (audioStream)
             {
@@ -439,7 +445,7 @@ namespace MultiPaste
                 if (KeyDiff != 0) KeyText += KeyDiff;
 
                 // create Audio folder if it's missing
-                string audioFolder = LocalClipboard.GetAudioFolder();
+                string audioFolder = this.mainWindow.Clipboard.AudioFolder;
                 Directory.CreateDirectory(audioFolder);
 
                 // create audio file in the Audio folder
@@ -462,13 +468,13 @@ namespace MultiPaste
                 + KeyText + Environment.NewLine;
 
             // add to local clipboard with CLIPBOARD file
-            LocalClipboard.AddWithFile(this.KeyText, this);
+            mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
             MsgLabel.Normal("Audio item added!");
         }
 
-        public AudioItem(ushort keyDiff, StreamReader streamReader)
-            : base(TypeEnum.Audio, keyDiff)
+        public AudioItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
+            : base(mainWindow, TypeEnum.Audio, keyDiff)
         {
             // retrieving ByteLength and KeyText from the stream
             ByteLength = long.Parse(streamReader.ReadLine());
@@ -486,16 +492,16 @@ namespace MultiPaste
                 + KeyText + Environment.NewLine;
 
             // if audio file is missing, remove item data from the temp CLIPBOARD file and return
-            string audioFolder = LocalClipboard.GetAudioFolder();
+            string audioFolder = this.mainWindow.Clipboard.AudioFolder;
             if (!File.Exists(Path.Combine(audioFolder, KeyText)))
             {
-                string tempFile = LocalClipboard.GetTempFile();
+                string tempFile = this.mainWindow.Clipboard.TempFile;
                 File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(FileChars, ""));
                 return;
             }
 
             // add to local clipboard
-            LocalClipboard.Add(this.KeyText, this);
+            mainWindow.Clipboard.Add(this.KeyText, this);
         }
 
         /// store length in bytes of the audio stream
@@ -510,7 +516,7 @@ namespace MultiPaste
 
     class CustomItem : ClipboardItem
     {
-        public CustomItem(IDataObject dataObject) : base(TypeEnum.Custom)
+        public CustomItem(MainWindow mainWindow, IDataObject dataObject) : base(mainWindow, TypeEnum.Custom)
         {
             // ensure dataObject is valid before continuing
             if (dataObject == null) return;
@@ -548,7 +554,7 @@ namespace MultiPaste
             if (KeyDiff != 0) KeyText += KeyDiff;
 
             // create folder if it's missing
-            string customFolder = LocalClipboard.GetCustomFolder();
+            string customFolder = this.mainWindow.Clipboard.CustomFolder;
             Directory.CreateDirectory(customFolder);
 
             // create file in Custom folder with dataObject
@@ -567,13 +573,13 @@ namespace MultiPaste
             FileChars = (char)Type + KeyDiff.ToString() + Environment.NewLine + WritableFormat + Environment.NewLine;
 
             // add to local clipboard with CLIPBOARD file
-            LocalClipboard.AddWithFile(this.KeyText, this);
+            mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
             MsgLabel.Normal("Custom item added!");
         }
 
-        public CustomItem(ushort keyDiff, StreamReader streamReader)
-            : base(TypeEnum.Custom, keyDiff)
+        public CustomItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
+            : base(mainWindow, TypeEnum.Custom, keyDiff)
         {
             // retrieving WritableFormat from the stream
             WritableFormat = streamReader.ReadLine();
@@ -594,16 +600,16 @@ namespace MultiPaste
             FileChars = (char)Type + KeyDiff.ToString() + Environment.NewLine + WritableFormat + Environment.NewLine;
 
             // if custom file is missing, remove item data from the temp CLIPBOARD file and return
-            string customFolder = LocalClipboard.GetCustomFolder();
+            string customFolder = this.mainWindow.Clipboard.CustomFolder;
             if (!File.Exists(Path.Combine(customFolder, KeyText)))
             {
-                string tempFile = LocalClipboard.GetTempFile();
+                string tempFile = this.mainWindow.Clipboard.TempFile;
                 File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(FileChars, ""));
                 return;
             }
 
             // add to local clipboard
-            LocalClipboard.Add(this.KeyText, this);
+            mainWindow.Clipboard.Add(this.KeyText, this);
         }
 
         /// store format whose data is serializable, i.e. can be written to the CLIPBOARD file

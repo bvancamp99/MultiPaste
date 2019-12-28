@@ -52,7 +52,7 @@
     <Compile Include="LocalClipboard.cs" />
     <Compile Include="ClipboardItem.cs" />
     <Compile Include="GlobalEventHook.cs" />
-    <Compile Include="LocalConfig.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="MainWindow.cs">
       <SubType>Form</SubType>
     </Compile>

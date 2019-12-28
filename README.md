@@ -19,7 +19,16 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Improve </h3>
 <ul>
-  <li>Working on LocalConfig.cs; moving over RestrictTypes method</li>
+  <li>Consider using discard _ instead of making variables for the ClipboardItems.  Make sure this doesn't mess with functionality though--worried that the garbage collector will try to dispose of it.  Maybe not though since each ClipboardItem is tied to LocalClipboard.Dict</li>
+  <li>Class for event handling of MainWindow</li>
+  <li>Maybe move HandleClipboard bool to GlobalEventHook.cs</li>
+  <li>Not sure if this would be possible, but making MainWindow static would make a lot of sense.  Then we don't have to pass copies of its instance around to every class.  Issue is then it can't inherit from the Form class (which isn't static).</li>
+  <li>ushort -> int; simpler that way</li>
+  <li>Properties for the custom classes in MainWindow.  Then we have a clean way for most classes to safely access each other.</li>
+  <li>Fewer static globals; make them non-static and/or replace with MainWindow instance</li>
+  <li>Move RestrictTypes to MyClipboard once we get the MainWindow instances passed</li>
+  <li>Properties instead of getters</li>
+  <li>Pass MainWindow instances</li>
   <li>So we init instances of our custom classes in MainWindow, right?  Why don't we make use of those instances for methods in those classes only used by MainWindow?  Then we would need fewer static methods.</li>
   <li>Use CheckedChanged event for updating config items</li>
   <li>See about removing getters from LocalClipboard.cs</li>

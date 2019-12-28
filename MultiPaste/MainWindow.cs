@@ -10,13 +10,13 @@ using System.Windows.Forms;
 
 namespace MultiPaste
 {
-    public partial class MainWindow : Form
+    partial class MainWindow : Form
     {
         //private const string CONFIG_FILENAME = "CONFIG"; // store name of config file
-        private readonly LocalConfig myConfig; // controls user config information
-        private readonly LocalClipboard myClipboard; // the driver of the clipboard history function
-        private readonly MsgLabel msgLabel; // custom label that messages the user via Label and Timer
-        private readonly GlobalEventHook eventHook; // WndProc event hook to detect clipboard changes and user input
+        //private readonly MyConfig myConfig; // controls user config information
+        //private readonly MyClipboard myClipboard; // the driver of the clipboard history function
+        //private readonly MsgLabel msgLabel; // custom label that messages the user via Label and Timer
+        //private readonly GlobalEventHook eventHook; // WndProc event hook to detect clipboard changes and user input
 
         public MainWindow()
         {
@@ -40,47 +40,129 @@ namespace MultiPaste
             //UpdateWindowsStartup();
 
             // init myConfig, used for user config information
-            this.myConfig = new LocalConfig(this);
+            this.Config = new Config(this);
+
+            // read from CONFIG file and update items accordingly
+            this.Config.FromFile();
 
             // init myClipboard, the driver of the clipboard history function
-            this.myClipboard = new LocalClipboard(this.listBox);
+            this.Clipboard = new LocalClipboard(this);
+
+            // read from CLIPBOARD file and write to local clipboard
+            this.Clipboard.FromFile();
 
             // init msgLabel, used for messaging the user
-            this.msgLabel = new MsgLabel(this.notifLabel);
+            this.MsgLabel = new MsgLabel(this.notifLabel);
 
             // initialize custom event hook that will handle clipboard changes and keyboard input
-            this.eventHook = new GlobalEventHook(this);
+            this.EventHook = new GlobalEventHook(this);
         }
 
-        public ToolStripMenuItem GetWinStartup()
+        /// <summary>
+        /// box that holds the visible clipboard items
+        /// </summary>
+        public ListBox ListBox
         {
-            return this.winStartupItem;
+            get { return this.listBox; }
         }
 
-        public ToolStripMenuItem GetShowText()
+        /// <summary>
+        /// menu item that determines whether to start MultiPaste on Windows startup
+        /// </summary>
+        public ToolStripMenuItem WinStartup
         {
-            return this.showTextItem;
+            get { return this.winStartupItem; }
+        }
+        
+        /// <summary>
+        /// menu item that determines whether to show/hide text items in the listbox
+        /// </summary>
+        public ToolStripMenuItem ShowText
+        {
+            get { return this.showTextItem; }
         }
 
-        public ToolStripMenuItem GetShowFiles()
+        /// <summary>
+        /// menu item that determines whether to show/hide file items in the listbox
+        /// </summary>
+        public ToolStripMenuItem ShowFiles
         {
-            return this.showFilesItem;
+            get { return this.showTextItem; }
         }
 
-        public ToolStripMenuItem GetShowImages()
+        /// <summary>
+        /// menu item that determines whether to show/hide image items in the listbox
+        /// </summary>
+        public ToolStripMenuItem ShowImages
         {
-            return this.showImagesItem;
+            get { return this.showTextItem; }
         }
 
-        public ToolStripMenuItem GetShowAudio()
+        /// <summary>
+        /// menu item that determines whether to show/hide audio items in the listbox
+        /// </summary>
+        public ToolStripMenuItem ShowAudio
         {
-            return this.showAudioItem;
+            get { return this.showTextItem; }
         }
 
-        public ToolStripMenuItem GetShowCustom()
+        /// <summary>
+        /// menu item that determines whether to show/hide custom items in the listbox
+        /// </summary>
+        public ToolStripMenuItem ShowCustom
         {
-            return this.showCustomItem;
+            get { return this.showTextItem; }
         }
+
+        /// <summary>
+        /// controls user config information
+        /// </summary>
+        public Config Config { get; }
+
+        /// <summary>
+        /// the driver of the clipboard history function
+        /// </summary>
+        public LocalClipboard Clipboard { get; }
+
+        /// <summary>
+        /// custom label that messages the user via Label and Timer
+        /// </summary>
+        public MsgLabel MsgLabel { get; }
+
+        /// <summary>
+        /// WndProc event hook to detect clipboard changes and user input
+        /// </summary>
+        public GlobalEventHook EventHook { get; }
+
+        //public ToolStripMenuItem GetWinStartup()
+        //{
+        //    return this.winStartupItem;
+        //}
+
+        //public ToolStripMenuItem GetShowText()
+        //{
+        //    return this.showTextItem;
+        //}
+
+        //public ToolStripMenuItem GetShowFiles()
+        //{
+        //    return this.showFilesItem;
+        //}
+
+        //public ToolStripMenuItem GetShowImages()
+        //{
+        //    return this.showImagesItem;
+        //}
+
+        //public ToolStripMenuItem GetShowAudio()
+        //{
+        //    return this.showAudioItem;
+        //}
+
+        //public ToolStripMenuItem GetShowCustom()
+        //{
+        //    return this.showCustomItem;
+        //}
 
         private void MainWindow_DragEnter(object sender, DragEventArgs e)
         {
@@ -95,12 +177,14 @@ namespace MultiPaste
         private void MainWindow_DragDrop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.UnicodeText))
-                new TextItem(e.Data.GetData(DataFormats.UnicodeText) as string);
+            {
+                TextItem myItem = new TextItem(this, e.Data.GetData(DataFormats.UnicodeText) as string);
+            }
             else if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 StringCollection fileDropList = new StringCollection();
                 fileDropList.AddRange(e.Data.GetData(DataFormats.FileDrop) as string[]);
-                new FileItem(fileDropList);
+                FileItem myItem = new FileItem(this, fileDropList);
             }
         }
 
@@ -135,16 +219,16 @@ namespace MultiPaste
             switch (e.KeyCode)
             {
                 case Keys.Up:
-                    LocalClipboard.OnKeyUp(e);
+                    this.Clipboard.OnKeyUp(e);
                     break;
 
                 case Keys.Down:
-                    LocalClipboard.OnKeyDown(e);
+                    this.Clipboard.OnKeyDown(e);
                     break;
 
                 case Keys.Enter:
                     // copy selected item to the Windows clipboard
-                    LocalClipboard.Copy();
+                    this.Clipboard.Copy();
                     break;
 
                 case Keys.Delete:
@@ -170,16 +254,16 @@ namespace MultiPaste
         private void ListBox_DoubleClick(object sender, EventArgs e)
         {
             // copy selected item to the Windows clipboard
-            LocalClipboard.Copy();
+            this.Clipboard.Copy();
         }
 
         private void RemoveBtn_Click(object sender, EventArgs e)
         {
             // set focus back to the local clipboard
-            LocalClipboard.Focus();
+            this.Clipboard.Focus();
 
             // remove the current index of the local clipboard
-            LocalClipboard.Remove();
+            this.Clipboard.Remove();
         }
 
         private void NotifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -200,36 +284,36 @@ namespace MultiPaste
 
         private void ClearItem_Click(object sender, EventArgs e)
         {
-            LocalClipboard.Clear();
+            this.Clipboard.Clear();
         }
 
-        private void RestrictTypes()
-        {
-            // first, clear the visual part of the local clipboard
-            ListBox myListBox = LocalClipboard.GetListBox();
-            myListBox.Items.Clear();
+        //private void RestrictTypes()
+        //{
+        //    // first, clear the visual part of the local clipboard
+        //    ListBox myListBox = myClipboard.GetListBox();
+        //    myListBox.Items.Clear();
 
-            // add each item back to the listbox if its type is allowed
-            bool allowType;
-            Dictionary<string, ClipboardItem> myDict = LocalClipboard.GetDict();
-            StringCollection myKeys = LocalClipboard.GetKeys();
-            foreach (string key in myKeys)
-            {
-                allowType = (this.showTextItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Text)
-                    || (this.showFilesItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.FileDropList)
-                    || (this.showImagesItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Image)
-                    || (this.showAudioItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Audio)
-                    || (this.showCustomItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Custom);
+        //    // add each item back to the listbox if its type is allowed
+        //    bool allowType;
+        //    Dictionary<string, ClipboardItem> myDict = MyClipboard.GetDict();
+        //    StringCollection myKeys = MyClipboard.GetKeys();
+        //    foreach (string key in myKeys)
+        //    {
+        //        allowType = (this.showTextItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Text)
+        //            || (this.showFilesItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.FileDropList)
+        //            || (this.showImagesItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Image)
+        //            || (this.showAudioItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Audio)
+        //            || (this.showCustomItem.Checked && myDict[key].Type == ClipboardItem.TypeEnum.Custom);
 
-                // if type is allowed, add to the listbox
-                if (allowType)
-                    myListBox.Items.Add(key);
-            }
-        }
+        //        // if type is allowed, add to the listbox
+        //        if (allowType)
+        //            myListBox.Items.Add(key);
+        //    }
+        //}
 
         private void ShowTextItem_Click(object sender, EventArgs e)
         {
-            this.RestrictTypes();
+            this.Clipboard.RestrictTypes();
 
             // notify the user of the change
             if (showTextItem.Checked)
@@ -240,7 +324,7 @@ namespace MultiPaste
 
         private void ShowFilesItem_Click(object sender, EventArgs e)
         {
-            this.RestrictTypes();
+            this.Clipboard.RestrictTypes();
 
             // notify the user of the change
             if (showFilesItem.Checked)
@@ -251,7 +335,7 @@ namespace MultiPaste
 
         private void ShowImagesItem_Click(object sender, EventArgs e)
         {
-            this.RestrictTypes();
+            this.Clipboard.RestrictTypes();
 
             // notify the user of the change
             if (showImagesItem.Checked)
@@ -262,7 +346,7 @@ namespace MultiPaste
 
         private void ShowAudioItem_Click(object sender, EventArgs e)
         {
-            this.RestrictTypes();
+            this.Clipboard.RestrictTypes();
 
             // notify the user of the change
             if (showAudioItem.Checked)
@@ -273,7 +357,7 @@ namespace MultiPaste
 
         private void ShowCustomItem_Click(object sender, EventArgs e)
         {
-            this.RestrictTypes();
+            this.Clipboard.RestrictTypes();
 
             // notify the user of the change
             if (showCustomItem.Checked)
@@ -299,10 +383,10 @@ namespace MultiPaste
         private void WinStartupItem_Click(object sender, EventArgs e)
         {
             // update Windows startup process
-            myConfig.WinStartupRegistry();
+            this.Config.WinStartupRegistry();
 
             // update CONFIG file
-            myConfig.UpdateFile();
+            this.Config.UpdateFile();
         }
 
         private void HelpItem_Click(object sender, EventArgs e)

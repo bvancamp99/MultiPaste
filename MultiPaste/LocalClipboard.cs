@@ -15,188 +15,269 @@ namespace MultiPaste
     {
         public const int CHAR_LIMIT = 100; // store max number of characters that can be displayed as a key in the dictionary
 
-        private static ListBox myListBox; // store listbox that contains all copied items
+        //private static ListBox myListBox; // store listbox that contains all copied items
 
-        private static Dictionary<string, ClipboardItem> myDict; // dict used for fast access of clipboard data
-        private static StringCollection myKeys; // collection used to store keys to clipboard items
-        private static bool handleClipboard; // bool to determine if we should handle clipboard changes
+        private readonly MainWindow mainWindow; // store MainWindow instance to access its variables
 
-        private static string clipboardFile; // clipboard file directory
-        private static string tempFile; // temp clipboard file, used when adding items from file on startup
-        private static string imageFolder; // image folder directory
-        private static string audioFolder; // audio folder directory
-        private static string customFolder; // custom folder directory
+        //private static Dictionary<string, ClipboardItem> myDict; // dict used for fast access of clipboard data
+        //private static StringCollection myKeys; // collection used to store keys to clipboard items
+        //private static bool handleClipboard; // bool to determine if we should handle clipboard changes
 
-        public LocalClipboard(ListBox myListBox)
+        //private static string clipboardFile; // clipboard file directory
+        //private static string tempFile; // temp clipboard file, used when adding items from file on startup
+        //private static string imageFolder; // image folder directory
+        //private static string audioFolder; // audio folder directory
+        //private static string customFolder; // custom folder directory
+
+        //public MyClipboard(ListBox myListBox)
+        //{
+        //    MyClipboard.myListBox = myListBox;
+
+        //    MyClipboard.myDict = new Dictionary<string, ClipboardItem>();
+        //    MyClipboard.myKeys = new StringCollection();
+        //    MyClipboard.handleClipboard = true;
+
+        //    MyClipboard.clipboardFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CLIPBOARD");
+        //    MyClipboard.tempFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
+        //    MyClipboard.imageFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images");
+        //    MyClipboard.audioFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Audio");
+        //    MyClipboard.customFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Custom");
+
+        //    // read from CLIPBOARD file and write to local clipboard
+        //    this.FromFile();
+        //}
+
+        public LocalClipboard(MainWindow mainWindow)
         {
-            LocalClipboard.myListBox = myListBox;
+            this.mainWindow = mainWindow;
 
-            LocalClipboard.myDict = new Dictionary<string, ClipboardItem>();
-            LocalClipboard.myKeys = new StringCollection();
-            LocalClipboard.handleClipboard = true;
+            this.Dict = new Dictionary<string, ClipboardItem>();
+            this.Keys = new StringCollection();
+            this.HandleClipboard = true;
 
-            LocalClipboard.clipboardFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CLIPBOARD");
-            LocalClipboard.tempFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
-            LocalClipboard.imageFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images");
-            LocalClipboard.audioFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Audio");
-            LocalClipboard.customFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Custom");
-
-            // read from CLIPBOARD file and write to local clipboard
-            this.FromFile();
+            this.ClipboardFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CLIPBOARD");
+            this.TempFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
+            this.ImageFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images");
+            this.AudioFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Audio");
+            this.CustomFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Custom");
         }
 
-        public static ListBox GetListBox()
-        {
-            return LocalClipboard.myListBox;
-        }
+        /// <summary>
+        /// dict used for fast access of clipboard data
+        /// </summary>
+        public Dictionary<string, ClipboardItem> Dict { get; }
 
-        public static Dictionary<string, ClipboardItem> GetDict()
-        {
-            return LocalClipboard.myDict;
-        }
+        /// <summary>
+        /// collection used to store keys to clipboard items
+        /// </summary>
+        public StringCollection Keys { get; }
 
-        public static StringCollection GetKeys()
-        {
-            return LocalClipboard.myKeys;
-        }
+        /// <summary>
+        /// bool to determine if we should handle clipboard changes
+        /// </summary>
+        public bool HandleClipboard { get; private set; }
 
-        public static bool GetHandleClipboard()
-        {
-            return LocalClipboard.handleClipboard;
-        }
+        /// <summary>
+        /// clipboard file directory
+        /// </summary>
+        public string ClipboardFile { get; }
 
-        public static string GetClipboardFile()
-        {
-            return LocalClipboard.clipboardFile;
-        }
+        /// <summary>
+        /// temp clipboard file, used when adding items from file on startup
+        /// </summary>
+        public string TempFile { get; }
 
-        public static string GetTempFile()
-        {
-            return LocalClipboard.tempFile;
-        }
+        /// <summary>
+        /// image folder directory
+        /// </summary>
+        public string ImageFolder { get; }
 
-        public static string GetImageFolder()
-        {
-            return LocalClipboard.imageFolder;
-        }
+        /// <summary>
+        /// audio folder directory
+        /// </summary>
+        public string AudioFolder { get; }
 
-        public static string GetAudioFolder()
-        {
-            return LocalClipboard.audioFolder;
-        }
+        /// <summary>
+        /// custom folder directory
+        /// </summary>
+        public string CustomFolder { get; }
 
-        public static string GetCustomFolder()
-        {
-            return LocalClipboard.customFolder;
-        }
+        //public ListBox GetListBox()
+        //{
+        //    return MyClipboard.myListBox;
+        //}
 
-        public static void OnClipboardChange()
+        //// TODO: remove after figuring out Config.cs
+        //public static Dictionary<string, ClipboardItem> GetDict()
+        //{
+        //    return this.Dict;
+        //}
+
+        //// TODO: remove after figuring out Config.cs
+        //public static StringCollection GetKeys()
+        //{
+        //    return this.Keys;
+        //}
+
+        //public static bool GetHandleClipboard()
+        //{
+        //    return LocalClipboard.handleClipboard;
+        //}
+
+        //public static string GetClipboardFile()
+        //{
+        //    return this.ClipboardFile;
+        //}
+
+        //public static string GetTempFile()
+        //{
+        //    return this.TempFile;
+        //}
+
+        //public static string GetImageFolder()
+        //{
+        //    return this.ImageFolder;
+        //}
+
+        //public static string GetAudioFolder()
+        //{
+        //    return this.AudioFolder;
+        //}
+
+        //public static string GetCustomFolder()
+        //{
+        //    return this.CustomFolder;
+        //}
+
+        public void OnClipboardChange()
         {
             if (Clipboard.ContainsText())
             {
                 string text = Clipboard.GetText();
-                TextItem myItem = new TextItem(text);
+                TextItem myItem = new TextItem(this.mainWindow, text);
             }
             else if (Clipboard.ContainsFileDropList())
             {
                 StringCollection files = Clipboard.GetFileDropList();
-                FileItem myItem = new FileItem(files);
+                FileItem myItem = new FileItem(this.mainWindow, files);
             }
             else if (Clipboard.ContainsImage())
             {
                 Image image = Clipboard.GetImage();
-                ImageItem myItem = new ImageItem(image);
+                ImageItem myItem = new ImageItem(this.mainWindow, image);
             }
             else if (Clipboard.ContainsAudio())
             {
                 Stream audio = Clipboard.GetAudioStream();
-                AudioItem myItem = new AudioItem(audio);
+                AudioItem myItem = new AudioItem(this.mainWindow, audio);
             }
             else
             {
                 IDataObject data = Clipboard.GetDataObject();
-                CustomItem myItem = new CustomItem(data);
+                CustomItem myItem = new CustomItem(this.mainWindow, data);
             }
         }
 
-        public static void Focus()
+        public void RestrictTypes()
         {
-            LocalClipboard.myListBox.Focus();
+            // first, clear the visual part of the local clipboard
+            ListBox myListBox = this.mainWindow.ListBox;
+            myListBox.Items.Clear();
+
+            // add each item back to the listbox if its type is allowed
+            bool allowType;
+            foreach (string key in this.Keys)
+            {
+                allowType = (this.mainWindow.ShowText.Checked && this.Dict[key].Type == ClipboardItem.TypeEnum.Text)
+                    || (this.mainWindow.ShowFiles.Checked && this.Dict[key].Type == ClipboardItem.TypeEnum.FileDropList)
+                    || (this.mainWindow.ShowImages.Checked && this.Dict[key].Type == ClipboardItem.TypeEnum.Image)
+                    || (this.mainWindow.ShowAudio.Checked && this.Dict[key].Type == ClipboardItem.TypeEnum.Audio)
+                    || (this.mainWindow.ShowCustom.Checked && this.Dict[key].Type == ClipboardItem.TypeEnum.Custom);
+
+                // if type is allowed, add to the listbox
+                if (allowType)
+                    myListBox.Items.Add(key);
+            }
         }
 
-        public static void Add(string key, ClipboardItem value)
+        public void Focus()
         {
-            LocalClipboard.myListBox.Items.Insert(0, key);
-            LocalClipboard.myKeys.Insert(0, key);
-            LocalClipboard.myDict.Add(key, value);
+            this.mainWindow.ListBox.Focus();
         }
 
-        public static void AddWithFile(string key, ClipboardItem value)
+        public void Add(string key, ClipboardItem value)
+        {
+            mainWindow.ListBox.Items.Insert(0, key);
+            this.Keys.Insert(0, key);
+            this.Dict.Add(key, value);
+        }
+
+        public void AddWithFile(string key, ClipboardItem value)
         {
             // if CLIPBOARD file is missing or empty
-            if (!File.Exists(LocalClipboard.clipboardFile) || new FileInfo(LocalClipboard.clipboardFile).Length <= 0)
+            if (!File.Exists(this.ClipboardFile) || new FileInfo(this.ClipboardFile).Length <= 0)
             {
                 // create new file and prepare to write
-                using (StreamWriter streamWriter = new StreamWriter(LocalClipboard.clipboardFile, false))
+                using (StreamWriter streamWriter = new StreamWriter(this.ClipboardFile, false))
                 {
                     // write each item's FileChars to the CLIPBOARD file
-                    for (int i = LocalClipboard.myKeys.Count - 1; i >= 0; i--)
-                        streamWriter.Write(LocalClipboard.myDict[LocalClipboard.myKeys[i]].FileChars);
+                    for (int i = this.Keys.Count - 1; i >= 0; i--)
+                        streamWriter.Write(this.Dict[this.Keys[i]].FileChars);
                 }
             }
 
             // add to data structures in the local clipboard
-            LocalClipboard.Add(key, value);
+            this.Add(key, value);
 
             // append the item's FileChars to the CLIPBOARD file
-            using (StreamWriter streamWriter = new StreamWriter(LocalClipboard.clipboardFile, true))
+            using (StreamWriter streamWriter = new StreamWriter(this.ClipboardFile, true))
                 streamWriter.Write(value.FileChars);
         }
 
-        public static void Insert(string key, ClipboardItem value, int index)
+        public void Insert(string key, ClipboardItem value, int index)
         {
-            LocalClipboard.myListBox.Items.Insert(index, key);
-            LocalClipboard.myKeys.Insert(index, key);
-            LocalClipboard.myDict.Add(key, value);
+            mainWindow.ListBox.Items.Insert(index, key);
+            this.Keys.Insert(index, key);
+            this.Dict.Add(key, value);
 
             // create or overwrite CLIPBOARD file, then write all items' FileChars in the appropriate order
-            using (StreamWriter streamWriter = new StreamWriter(LocalClipboard.clipboardFile, false))
+            using (StreamWriter streamWriter = new StreamWriter(this.ClipboardFile, false))
             {
                 // write items prior to index to CLIPBOARD file
-                for (int i = LocalClipboard.myKeys.Count - 1; i > index; i--)
-                    streamWriter.Write(LocalClipboard.myDict[LocalClipboard.myKeys[i]].FileChars);
+                for (int i = this.Keys.Count - 1; i > index; i--)
+                    streamWriter.Write(this.Dict[this.Keys[i]].FileChars);
 
                 // write current item's FileChars to CLIPBOARD file
-                streamWriter.Write(LocalClipboard.myDict[LocalClipboard.myKeys[index]].FileChars);
+                streamWriter.Write(this.Dict[this.Keys[index]].FileChars);
 
                 // write items following index to CLIPBOARD file
                 for (int i = index - 1; i >= 0; i--)
-                    streamWriter.Write(LocalClipboard.myDict[LocalClipboard.myKeys[i]].FileChars);
+                    streamWriter.Write(this.Dict[this.Keys[i]].FileChars);
             }
         }
 
-        public static void Remove(string key, ClipboardItem value)
+        public void Remove(string key, ClipboardItem value)
         {
             // if CLIPBOARD file exists and isn't empty, CLIPBOARD file -= this item's FileChars
-            if (File.Exists(LocalClipboard.clipboardFile) && new FileInfo(LocalClipboard.clipboardFile).Length > 0)
+            if (File.Exists(this.ClipboardFile) && new FileInfo(this.ClipboardFile).Length > 0)
             {
-                string newText = File.ReadAllText(LocalClipboard.clipboardFile).Replace(value.FileChars, "");
-                File.WriteAllText(LocalClipboard.clipboardFile, newText);
+                string newText = File.ReadAllText(this.ClipboardFile).Replace(value.FileChars, "");
+                File.WriteAllText(this.ClipboardFile, newText);
             }
 
             // remove item by its key
-            LocalClipboard.myListBox.Items.Remove(key);
-            LocalClipboard.myKeys.Remove(key);
-            LocalClipboard.myDict.Remove(key);
+            mainWindow.ListBox.Items.Remove(key);
+            this.Keys.Remove(key);
+            this.Dict.Remove(key);
 
             // determine if we need to delete any files along with the item
             string folder = null;
             if (value is ImageItem)
-                folder = LocalClipboard.imageFolder;
+                folder = this.ImageFolder;
             else if (value is AudioItem)
-                folder = LocalClipboard.audioFolder;
+                folder = this.AudioFolder;
             else if (value is CustomItem)
-                folder = LocalClipboard.customFolder;
+                folder = this.CustomFolder;
 
             // delete the specified file if applicable
             if (folder != null)
@@ -215,64 +296,64 @@ namespace MultiPaste
             }
         }
 
-        public static void Remove(int index)
+        public void Remove(int index)
         {
             // return if index is invalid
             if (index < 0)
                 return;
 
             // remove the item at the index
-            ClipboardItem clipboardItem = LocalClipboard.myDict[LocalClipboard.myKeys[index]];
-            LocalClipboard.Remove(clipboardItem.KeyText, clipboardItem);
+            ClipboardItem clipboardItem = this.Dict[this.Keys[index]];
+            this.Remove(clipboardItem.KeyText, clipboardItem);
 
             // if there was an item located after the removed item, select that item
-            if (LocalClipboard.myListBox.Items.Count > index)
-                LocalClipboard.myListBox.SelectedIndex = index;
+            if (mainWindow.ListBox.Items.Count > index)
+                mainWindow.ListBox.SelectedIndex = index;
             // else select the item located before the removed item
             else
-                LocalClipboard.myListBox.SelectedIndex = index - 1;
+                mainWindow.ListBox.SelectedIndex = index - 1;
 
             // notify the user of the successful operation for 3 seconds
             MsgLabel.Normal("Item removed!");
         }
 
-        public static void Remove()
+        public void Remove()
         {
-            LocalClipboard.Remove(LocalClipboard.myListBox.SelectedIndex);
+            this.Remove(mainWindow.ListBox.SelectedIndex);
         }
 
-        public static void Move(string key, ClipboardItem value, int index)
+        public void Move(string key, ClipboardItem value, int index)
         {
-            LocalClipboard.Remove(key, value);
-            LocalClipboard.Insert(key, value, index);
+            this.Remove(key, value);
+            this.Insert(key, value, index);
         }
 
-        public static void Clear()
+        public void Clear()
         {
             // clear each data structure associated with the local clipboard
-            LocalClipboard.myListBox.Items.Clear();
-            LocalClipboard.myKeys.Clear();
-            LocalClipboard.myDict.Clear();
+            mainWindow.ListBox.Items.Clear();
+            this.Keys.Clear();
+            this.Dict.Clear();
 
             // delete the CLIPBOARD file
-            File.Delete(LocalClipboard.clipboardFile);
+            File.Delete(this.ClipboardFile);
 
             // recursively delete each item folder if it exists
-            if (Directory.Exists(LocalClipboard.imageFolder))
-                Directory.Delete(LocalClipboard.imageFolder, true);
-            if (Directory.Exists(LocalClipboard.audioFolder))
-                Directory.Delete(LocalClipboard.audioFolder, true);
-            if (Directory.Exists(LocalClipboard.customFolder))
-                Directory.Delete(LocalClipboard.customFolder, true);
+            if (Directory.Exists(this.ImageFolder))
+                Directory.Delete(this.ImageFolder, true);
+            if (Directory.Exists(this.AudioFolder))
+                Directory.Delete(this.AudioFolder, true);
+            if (Directory.Exists(this.CustomFolder))
+                Directory.Delete(this.CustomFolder, true);
 
             MsgLabel.Normal("All items cleared!");
         }
 
-        public static void OnKeyUp(KeyEventArgs e)
+        public void OnKeyUp(KeyEventArgs e)
         {
             // vars regarding listbox data
-            int total = LocalClipboard.myListBox.Items.Count;
-            int current = LocalClipboard.myListBox.SelectedIndex;
+            int total = mainWindow.ListBox.Items.Count;
+            int current = mainWindow.ListBox.SelectedIndex;
 
             // base case 1: nothing in the clipboard, or current index is 0
             if (total == 0 || current == 0) return;
@@ -280,19 +361,19 @@ namespace MultiPaste
             // base case 2: no item is selected, or only one item exists
             if (current < 0 || total == 1)
             {
-                LocalClipboard.myListBox.SelectedIndex = 0;
+                mainWindow.ListBox.SelectedIndex = 0;
                 return;
             }
 
             // base case 3: shift isn't being pressed; move cursor up one index
             if (!e.Shift)
             {
-                LocalClipboard.myListBox.SelectedIndex--;
+                mainWindow.ListBox.SelectedIndex--;
                 return;
             }
 
             // store the item at current index
-            ClipboardItem clipboardItem = LocalClipboard.myDict[LocalClipboard.myKeys[current]];
+            ClipboardItem clipboardItem = this.Dict[this.Keys[current]];
 
             // set new index based on ctrl being pressed
             if (e.Control)
@@ -301,15 +382,15 @@ namespace MultiPaste
                 current--;
 
             // move item to new index
-            LocalClipboard.Move(clipboardItem.KeyText, clipboardItem, current);
-            LocalClipboard.myListBox.SelectedIndex = current;
+            this.Move(clipboardItem.KeyText, clipboardItem, current);
+            mainWindow.ListBox.SelectedIndex = current;
         }
 
-        public static void OnKeyDown(KeyEventArgs e)
+        public void OnKeyDown(KeyEventArgs e)
         {
             // vars regarding listbox data
-            int total = LocalClipboard.myListBox.Items.Count;
-            int current = LocalClipboard.myListBox.SelectedIndex;
+            int total = mainWindow.ListBox.Items.Count;
+            int current = mainWindow.ListBox.SelectedIndex;
 
             // base case 1: nothing in the clipboard, or current is at the last index
             if (total == 0 || current == total - 1) return;
@@ -317,19 +398,19 @@ namespace MultiPaste
             // base case 2: no item is selected, or only one item exists
             if (current < 0 || total == 1)
             {
-                LocalClipboard.myListBox.SelectedIndex = 0;
+                mainWindow.ListBox.SelectedIndex = 0;
                 return;
             }
 
             // base case 3: shift isn't being pressed; move cursor down one index
             if (!e.Shift)
             {
-                LocalClipboard.myListBox.SelectedIndex++;
+                mainWindow.ListBox.SelectedIndex++;
                 return;
             }
 
             // store the item at current index
-            ClipboardItem clipboardItem = LocalClipboard.myDict[LocalClipboard.myKeys[current]];
+            ClipboardItem clipboardItem = this.Dict[this.Keys[current]];
 
             // set new index based on ctrl being pressed
             if (e.Control)
@@ -338,22 +419,22 @@ namespace MultiPaste
                 current++;
 
             // move item to new index
-            LocalClipboard.Move(clipboardItem.KeyText, clipboardItem, current);
-            LocalClipboard.myListBox.SelectedIndex = current;
+            this.Move(clipboardItem.KeyText, clipboardItem, current);
+            mainWindow.ListBox.SelectedIndex = current;
         }
 
-        public static void Copy()
+        public void Copy()
         {
             // check for valid SelectedIndex val before continuing
-            if (LocalClipboard.myListBox.SelectedIndex < 0)
+            if (mainWindow.ListBox.SelectedIndex < 0)
                 return;
 
-            // clipboard will be changed in this method; we don't want it to be handled
-            LocalClipboard.handleClipboard = false;
+            // Windows clipboard will be changed in this method; we don't want it to be handled
+            this.HandleClipboard = false;
 
             // store the selected item
-            string key = LocalClipboard.myKeys[LocalClipboard.myListBox.SelectedIndex];
-            ClipboardItem clipboardItem = LocalClipboard.myDict[key];
+            string key = this.Keys[mainWindow.ListBox.SelectedIndex];
+            ClipboardItem clipboardItem = this.Dict[key];
 
             // store an error msg string that will notify the user if an error occurred
             string errMsg = null;
@@ -369,10 +450,10 @@ namespace MultiPaste
                     break;
 
                 case ClipboardItem.TypeEnum.Image:
-                    if (File.Exists(Path.Combine(LocalClipboard.imageFolder, clipboardItem.KeyText)))
+                    if (File.Exists(Path.Combine(this.ImageFolder, clipboardItem.KeyText)))
                     {
                         // store the image from the file
-                        Image image = Image.FromFile(Path.Combine(LocalClipboard.imageFolder, clipboardItem.KeyText));
+                        Image image = Image.FromFile(Path.Combine(this.ImageFolder, clipboardItem.KeyText));
 
                         // set image to the Windows clipboard
                         Clipboard.SetImage(image);
@@ -385,11 +466,11 @@ namespace MultiPaste
                     break;
 
                 case ClipboardItem.TypeEnum.Audio:
-                    if (File.Exists(Path.Combine(LocalClipboard.audioFolder, clipboardItem.KeyText)))
+                    if (File.Exists(Path.Combine(this.AudioFolder, clipboardItem.KeyText)))
                     {
                         // store audio stream from the file
                         Stream audio = new MemoryStream(File.ReadAllBytes(Path.Combine
-                            (LocalClipboard.audioFolder, clipboardItem.KeyText)));
+                            (this.AudioFolder, clipboardItem.KeyText)));
 
                         // set audio to the Windows clipboard
                         Clipboard.SetAudio(audio);
@@ -402,11 +483,11 @@ namespace MultiPaste
                     break;
 
                 case ClipboardItem.TypeEnum.Custom:
-                    if (File.Exists(Path.Combine(LocalClipboard.customFolder, clipboardItem.KeyText)))
+                    if (File.Exists(Path.Combine(this.CustomFolder, clipboardItem.KeyText)))
                     {
                         // store custom data from the file
                         object data;
-                        using (var stream = new FileStream(Path.Combine(LocalClipboard.customFolder,
+                        using (var stream = new FileStream(Path.Combine(this.CustomFolder,
                             clipboardItem.KeyText), FileMode.Open))
                         {
                             data = new BinaryFormatter().Deserialize(stream);
@@ -421,7 +502,7 @@ namespace MultiPaste
             }
 
             // flip to true after algorithm is finished
-            LocalClipboard.handleClipboard = true;
+            this.HandleClipboard = true;
 
             // notify to the user the results of the operation attempt
             if (errMsg == null)
@@ -430,17 +511,17 @@ namespace MultiPaste
                 MsgLabel.Warn(errMsg);
         }
 
-        private void FromFile()
+        public void FromFile()
         {
             // if CLIPBOARD file is missing or empty
-            if (!File.Exists(LocalClipboard.clipboardFile) || new FileInfo(LocalClipboard.clipboardFile).Length <= 0)
+            if (!File.Exists(this.ClipboardFile) || new FileInfo(this.ClipboardFile).Length <= 0)
                 return;
 
             // if any data files are missing, this temp CLIPBOARD file will be updated
-            File.WriteAllText(LocalClipboard.tempFile, File.ReadAllText(LocalClipboard.clipboardFile));
+            File.WriteAllText(this.TempFile, File.ReadAllText(this.ClipboardFile));
 
             // traverse and store the contents of the file into new instances of ClipboardItem's derived classes
-            using (StreamReader streamReader = new StreamReader(LocalClipboard.clipboardFile))
+            using (StreamReader streamReader = new StreamReader(this.ClipboardFile))
             {
                 while (!streamReader.EndOfStream)
                 {
@@ -454,31 +535,31 @@ namespace MultiPaste
                     switch (type)
                     {
                         case ClipboardItem.TypeEnum.Text:
-                            TextItem myTextItem = new TextItem(keyDiff, streamReader);
+                            TextItem myTextItem = new TextItem(this.mainWindow, keyDiff, streamReader);
                             break;
 
                         case ClipboardItem.TypeEnum.FileDropList:
-                            FileItem myFileItem = new FileItem(keyDiff, streamReader);
+                            FileItem myFileItem = new FileItem(this.mainWindow, keyDiff, streamReader);
                             break;
 
                         case ClipboardItem.TypeEnum.Image:
-                            ImageItem myImageItem = new ImageItem(keyDiff, streamReader);
+                            ImageItem myImageItem = new ImageItem(this.mainWindow, keyDiff, streamReader);
                             break;
 
                         case ClipboardItem.TypeEnum.Audio:
-                            AudioItem myAudioItem = new AudioItem(keyDiff, streamReader);
+                            AudioItem myAudioItem = new AudioItem(this.mainWindow, keyDiff, streamReader);
                             break;
 
                         case ClipboardItem.TypeEnum.Custom:
-                            CustomItem myCustomItem = new CustomItem(keyDiff, streamReader);
+                            CustomItem myCustomItem = new CustomItem(this.mainWindow, keyDiff, streamReader);
                             break;
                     }
                 }
             }
 
             // all items have been read from the file and added; replace CLIPBOARD file with the temp file
-            File.Delete(LocalClipboard.clipboardFile);
-            File.Move(LocalClipboard.tempFile, LocalClipboard.clipboardFile);
+            File.Delete(this.ClipboardFile);
+            File.Move(this.TempFile, this.ClipboardFile);
         }
     }
 }

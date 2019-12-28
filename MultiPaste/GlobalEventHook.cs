@@ -45,8 +45,8 @@ namespace MultiPaste
             switch (m.Msg)
             {
                 case WM_DRAWCLIPBOARD:
-                    if (LocalClipboard.GetHandleClipboard())
-                        LocalClipboard.OnClipboardChange();
+                    if (mainWindow.Clipboard.HandleClipboard)
+                        mainWindow.Clipboard.OnClipboardChange();
                     SendMessage(clipboardViewerNext, m.Msg, m.WParam, m.LParam);
                     break;
 
@@ -76,7 +76,7 @@ namespace MultiPaste
                                     if (!mainWindow.Visible)
                                     {
                                         mainWindow.Visible = true;
-                                        LocalClipboard.Focus();
+                                        mainWindow.Clipboard.Focus();
                                     }
                                 }
                                 break;
