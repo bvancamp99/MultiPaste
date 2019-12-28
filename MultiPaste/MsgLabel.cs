@@ -9,65 +9,65 @@ namespace MultiPaste
 {
     class MsgLabel
     {
-        private static Label myLabel;
-        private static Timer myTimer;
+        private readonly MainWindow mainWindow; // store MainWindow instance to access its variables
+        private readonly Timer timer; // used to determine how long to display a message
 
-        public MsgLabel (Label myLabel)
+        public MsgLabel(MainWindow mainWindow)
         {
-            MsgLabel.myLabel = myLabel;
+            this.mainWindow = mainWindow;
 
             // initialize the timer with its interval at 3 seconds
-            MsgLabel.myTimer = new Timer
+            this.timer = new Timer
             {
                 Interval = 3000
             };
 
             // clear notifLabel when the timer goes off, then stop the timer
-            MsgLabel.myTimer.Tick += (sender, e) =>
+            this.timer.Tick += (sender, e) =>
             {
-                MsgLabel.myLabel.Text = string.Empty;
-                MsgLabel.myTimer.Stop();
+                this.mainWindow.Label.Text = string.Empty;
+                this.timer.Stop();
             };
         }
 
-        public static void Normal(string msg)
+        public void Normal(string msg)
         {
             // stop the timer if it's currently running
-            if (myTimer.Enabled)
-                myTimer.Stop();
+            if (this.timer.Enabled)
+                this.timer.Stop();
 
-            // set myLabel's text to the param string
-            myLabel.Text = msg;
+            // set the label's text to the param string
+            this.mainWindow.Label.Text = msg;
 
-            // begin the timer, which will clear myLabel after 3 seconds
-            myTimer.Start();
+            // begin the timer, which will clear the label after 3 seconds
+            this.timer.Start();
         }
 
-        public static void Warn(string msg)
+        public void Warn(string msg)
         {
             // stop the timer if it's currently running
-            if (myTimer.Enabled)
-                myTimer.Stop();
+            if (this.timer.Enabled)
+                this.timer.Stop();
 
-            // set myLabel's text to the param string
-            myLabel.Text = "***WARNING*** " + msg;
+            // set the label's text to the param string
+            this.mainWindow.Label.Text = "***WARNING*** " + msg;
 
-            // begin the timer, which will clear myLabel after 3 seconds
-            myTimer.Start();
+            // begin the timer, which will clear the label after 3 seconds
+            this.timer.Start();
         }
 
         // TODO: write to error log, maybe include line number of problem if in CLIPBOARD file
-        public static void Fatal(string msg)
+        public void Fatal(string msg)
         {
             // stop the timer if it's currently running
-            if (myTimer.Enabled)
-                myTimer.Stop();
+            if (this.timer.Enabled)
+                this.timer.Stop();
 
-            // set myLabel's text to the param string
-            myLabel.Text = "***ERROR*** " + msg;
+            // set the label's text to the param string
+            this.mainWindow.Label.Text = "***ERROR*** " + msg;
 
-            // begin the timer, which will clear myLabel after 3 seconds
-            myTimer.Start();
+            // begin the timer, which will clear the label after 3 seconds
+            this.timer.Start();
         }
     }
 }

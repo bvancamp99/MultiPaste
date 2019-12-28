@@ -237,7 +237,7 @@ namespace MultiPaste
                 this.mainWindow.ListBox.SelectedIndex = index - 1;
 
             // notify the user of the successful operation for 3 seconds
-            MsgLabel.Normal("Item removed!");
+            this.mainWindow.MsgLabel.Normal("Item removed!");
         }
 
         public void Remove()
@@ -269,7 +269,7 @@ namespace MultiPaste
             if (Directory.Exists(this.CustomFolder))
                 Directory.Delete(this.CustomFolder, true);
 
-            MsgLabel.Normal("All items cleared!");
+            this.mainWindow.MsgLabel.Normal("All items cleared!");
         }
 
         public void OnKeyUp(KeyEventArgs e)
@@ -430,9 +430,9 @@ namespace MultiPaste
 
             // notify to the user the results of the operation attempt
             if (errMsg == null)
-                MsgLabel.Normal("Copied to clipboard!");
+                this.mainWindow.MsgLabel.Normal("Copied to clipboard!");
             else
-                MsgLabel.Warn(errMsg);
+                this.mainWindow.MsgLabel.Warn(errMsg);
         }
 
         public void FromFile()

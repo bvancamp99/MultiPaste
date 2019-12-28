@@ -137,7 +137,7 @@ namespace MultiPaste
             // add to local clipboard with CLIPBOARD file
             this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
-            MsgLabel.Normal("Text item added!");
+            this.mainWindow.MsgLabel.Normal("Text item added!");
         }
 
         public TextItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
@@ -247,7 +247,7 @@ namespace MultiPaste
             // add to local clipboard with CLIPBOARD file
             this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
-            MsgLabel.Normal("File item added!");
+            this.mainWindow.MsgLabel.Normal("File item added!");
         }
 
         public FileItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
@@ -374,7 +374,7 @@ namespace MultiPaste
             // add to local clipboard with CLIPBOARD file
             this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
-            MsgLabel.Normal("Image item added!");
+            this.mainWindow.MsgLabel.Normal("Image item added!");
         }
 
         public ImageItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
@@ -517,7 +517,7 @@ namespace MultiPaste
             // add to local clipboard with CLIPBOARD file
             this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
-            MsgLabel.Normal("Audio item added!");
+            this.mainWindow.MsgLabel.Normal("Audio item added!");
         }
 
         public AudioItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
@@ -634,7 +634,7 @@ namespace MultiPaste
             // add to local clipboard with CLIPBOARD file
             this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
-            MsgLabel.Normal("Custom item added!");
+            this.mainWindow.MsgLabel.Normal("Custom item added!");
         }
 
         public CustomItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)

@@ -115,9 +115,9 @@ namespace MultiPaste
 
             // notify the user of the change
             if (showTextItem.Checked)
-                MsgLabel.Normal("Text items displayed!");
+                this.MsgLabel.Normal("Text items displayed!");
             else
-                MsgLabel.Normal("Text items hidden!");
+                this.MsgLabel.Normal("Text items hidden!");
         }
 
         private void ShowFilesItem_Click(object sender, EventArgs e)
@@ -126,9 +126,9 @@ namespace MultiPaste
 
             // notify the user of the change
             if (showFilesItem.Checked)
-                MsgLabel.Normal("File items displayed!");
+                this.MsgLabel.Normal("File items displayed!");
             else
-                MsgLabel.Normal("File items hidden!");
+                this.MsgLabel.Normal("File items hidden!");
         }
 
         private void ShowImagesItem_Click(object sender, EventArgs e)
@@ -137,9 +137,9 @@ namespace MultiPaste
 
             // notify the user of the change
             if (showImagesItem.Checked)
-                MsgLabel.Normal("Image items displayed!");
+                this.MsgLabel.Normal("Image items displayed!");
             else
-                MsgLabel.Normal("Image items hidden!");
+                this.MsgLabel.Normal("Image items hidden!");
         }
 
         private void ShowAudioItem_Click(object sender, EventArgs e)
@@ -148,9 +148,9 @@ namespace MultiPaste
 
             // notify the user of the change
             if (showAudioItem.Checked)
-                MsgLabel.Normal("Audio items displayed!");
+                this.MsgLabel.Normal("Audio items displayed!");
             else
-                MsgLabel.Normal("Audio items hidden!");
+                this.MsgLabel.Normal("Audio items hidden!");
         }
 
         private void ShowCustomItem_Click(object sender, EventArgs e)
@@ -159,9 +159,9 @@ namespace MultiPaste
 
             // notify the user of the change
             if (showCustomItem.Checked)
-                MsgLabel.Normal("Custom items displayed!");
+                this.MsgLabel.Normal("Custom items displayed!");
             else
-                MsgLabel.Normal("Custom items hidden!");
+                this.MsgLabel.Normal("Custom items hidden!");
         }
 
         private void ExitItem_Click(object sender, EventArgs e)
@@ -181,7 +181,7 @@ namespace MultiPaste
         private void HelpItem_Click(object sender, EventArgs e)
         {
             // notify the user that we're attempting to open the help file
-            MsgLabel.Normal("Opening help.txt...");
+            this.MsgLabel.Normal("Opening help.txt...");
 
             // create or open help.txt and overwrite its contents
             File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "help.txt"),
@@ -211,7 +211,7 @@ namespace MultiPaste
             Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "help.txt"));
 
             // notify the user of the successful operation for 3 seconds
-            MsgLabel.Normal("help.txt is open!");
+            this.MsgLabel.Normal("help.txt is open!");
         }
     }
 }
