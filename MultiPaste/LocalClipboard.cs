@@ -104,8 +104,8 @@ namespace MultiPaste
         public void RestrictTypes()
         {
             // first, clear the visual part of the local clipboard
-            ListBox myListBox = this.mainWindow.ListBox;
-            myListBox.Items.Clear();
+            ListBox.ObjectCollection myItems = this.mainWindow.ListBox.Items;
+            myItems.Clear();
 
             // add each item back to the listbox if its type is allowed
             bool allowType;
@@ -119,7 +119,7 @@ namespace MultiPaste
 
                 // if type is allowed, add to the listbox
                 if (allowType)
-                    myListBox.Items.Add(key);
+                    myItems.Add(key);
             }
         }
 
