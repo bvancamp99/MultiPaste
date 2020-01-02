@@ -272,14 +272,62 @@ namespace MultiPaste
             this.mainWindow.MsgLabel.Normal("All items cleared!");
         }
 
+        //public void OnKeyUp(KeyEventArgs e)
+        //{
+        //    // vars regarding listbox data
+        //    int total = this.mainWindow.ListBox.Items.Count;
+        //    int current = this.mainWindow.ListBox.SelectedIndex;
+
+        //    // base case 1: nothing in the clipboard
+        //    if (total == 0) return;
+
+        //    // base case 2: no item is selected, or only one item exists
+        //    if (current < 0 || total == 1)
+        //    {
+        //        this.mainWindow.ListBox.SelectedIndex = 0;
+        //        return;
+        //    }
+
+        //    // base case 3: current index is 0
+        //    if (current == 0)
+        //    {
+        //        // wrap to bottom index if box is checked
+        //        if (this.mainWindow.WrapKeys.Checked && !e.Shift)
+        //            this.mainWindow.ListBox.SelectedIndex = total - 1;
+        //        // else do nothing
+
+        //        return;
+        //    }
+
+        //    // base case 4: shift isn't being pressed; move cursor up one index
+        //    if (!e.Shift)
+        //    {
+        //        this.mainWindow.ListBox.SelectedIndex--;
+        //        return;
+        //    }
+
+        //    // store the item at current index
+        //    ClipboardItem clipboardItem = this.Dict[this.Keys[current]];
+
+        //    // set new index based on ctrl being pressed
+        //    if (e.Control)
+        //        current = 0;
+        //    else
+        //        current--;
+
+        //    // move item to new index
+        //    this.Move(clipboardItem.KeyText, clipboardItem, current);
+        //    this.mainWindow.ListBox.SelectedIndex = current;
+        //}
+
         public void OnKeyUp(KeyEventArgs e)
         {
             // vars regarding listbox data
             int total = this.mainWindow.ListBox.Items.Count;
             int current = this.mainWindow.ListBox.SelectedIndex;
 
-            // base case 1: nothing in the clipboard, or current index is 0
-            if (total == 0 || current == 0) return;
+            // base case 1: nothing in the clipboard
+            if (total == 0) return;
 
             // base case 2: no item is selected, or only one item exists
             if (current < 0 || total == 1)
@@ -288,26 +336,118 @@ namespace MultiPaste
                 return;
             }
 
-            // base case 3: shift isn't being pressed; move cursor up one index
-            if (!e.Shift)
-            {
-                this.mainWindow.ListBox.SelectedIndex--;
-                return;
-            }
-
             // store the item at current index
             ClipboardItem clipboardItem = this.Dict[this.Keys[current]];
 
-            // set new index based on ctrl being pressed
-            if (e.Control)
-                current = 0;
-            else
-                current--;
+            // store new index for the item and/or index to be moved
+            int newIndex;
 
-            // move item to new index
-            this.Move(clipboardItem.KeyText, clipboardItem, current);
-            this.mainWindow.ListBox.SelectedIndex = current;
+            // base case 3: current index is 0
+            if (current == 0)
+            {
+                // if box isn't checked, no wrapping or moving is needed
+                if (!this.mainWindow.WrapKeys.Checked)
+                    return;
+
+                // we will be wrapping to the bottom, so newIndex is set to the bottom index
+                newIndex = total - 1;
+
+                // move current item to the bottom index if shift is pressed
+                if (e.Shift)
+                {
+                    this.Move(clipboardItem.KeyText, clipboardItem, newIndex);
+
+                    // wrap selected index to the bottom index only if the box is checked
+                    if (this.mainWindow.ChangeTopBottom.Checked)
+                        this.mainWindow.ListBox.SelectedIndex = newIndex;
+                    else
+                        this.mainWindow.ListBox.SelectedIndex = current;
+                }
+                // else don't move the current item, and wrap the selected index unconditionally
+                else
+                    this.mainWindow.ListBox.SelectedIndex = newIndex;
+
+                return;
+            }
+
+            // store whether the selected index should be changed
+            bool changeIndex = true;
+
+            // if ctrl is being pressed, set newIndex to the top index, i.e. 0
+            if (e.Control)
+            {
+                newIndex = 0;
+
+                // selected index should be unchanged if we're moving an item 
+                // to the top/bottom, but the box is unchecked
+                if (e.Shift && !this.mainWindow.ChangeTopBottom.Checked)
+                    changeIndex = false;
+            }
+            // else set newIndex to current - 1
+            else
+            {
+                newIndex = current - 1;
+                // changeIndex is unconditionally true if ctrl isn't being pressed
+            }
+
+            // move item to new index if shift is pressed
+            if (e.Shift)
+                this.Move(clipboardItem.KeyText, clipboardItem, newIndex);
+
+            // move selected index to new index if bool is satisfied
+            if (changeIndex)
+                this.mainWindow.ListBox.SelectedIndex = newIndex;
+            else
+                this.mainWindow.ListBox.SelectedIndex = current;
         }
+
+        //public void OnKeyDown(KeyEventArgs e)
+        //{
+        //    // vars regarding listbox data
+        //    int total = this.mainWindow.ListBox.Items.Count;
+        //    int current = this.mainWindow.ListBox.SelectedIndex;
+
+        //    // base case 1: nothing in the clipboard
+        //    if (total == 0) return;
+
+        //    // base case 2: no item is selected, or only one item exists
+        //    if (current < 0 || total == 1)
+        //    {
+        //        this.mainWindow.ListBox.SelectedIndex = 0;
+        //        return;
+        //    }
+
+        //    // base case 3: current is at the last index
+        //    if (current == total - 1)
+        //    {
+        //        // wrap to top index if box is checked
+        //        if (this.mainWindow.WrapKeys.Checked && !e.Shift)
+        //            this.mainWindow.ListBox.SelectedIndex = 0;
+        //        // else do nothing
+
+        //        return;
+        //    }
+
+        //    // base case 4: shift isn't being pressed; move cursor down one index
+        //    if (!e.Shift)
+        //    {
+        //        this.mainWindow.ListBox.SelectedIndex++;
+        //        return;
+        //    }
+
+        //    // store the item at current index
+        //    ClipboardItem clipboardItem = this.Dict[this.Keys[current]];
+
+        //    // set new index based on ctrl being pressed
+        //    if (e.Control)
+        //        current = total - 1;
+        //    else
+        //        current++;
+
+        //    // move item to new index
+        //    this.Move(clipboardItem.KeyText, clipboardItem, current);
+        //    this.mainWindow.ListBox.SelectedIndex = current;
+        //}
 
         public void OnKeyDown(KeyEventArgs e)
         {
@@ -315,8 +455,8 @@ namespace MultiPaste
             int total = this.mainWindow.ListBox.Items.Count;
             int current = this.mainWindow.ListBox.SelectedIndex;
 
-            // base case 1: nothing in the clipboard, or current is at the last index
-            if (total == 0 || current == total - 1) return;
+            // base case 1: nothing in the clipboard
+            if (total == 0) return;
 
             // base case 2: no item is selected, or only one item exists
             if (current < 0 || total == 1)
@@ -325,25 +465,69 @@ namespace MultiPaste
                 return;
             }
 
-            // base case 3: shift isn't being pressed; move cursor down one index
-            if (!e.Shift)
-            {
-                this.mainWindow.ListBox.SelectedIndex++;
-                return;
-            }
-
             // store the item at current index
             ClipboardItem clipboardItem = this.Dict[this.Keys[current]];
 
-            // set new index based on ctrl being pressed
-            if (e.Control)
-                current = total - 1;
-            else
-                current++;
+            // store new index for the item and/or index to be moved
+            int newIndex;
 
-            // move item to new index
-            this.Move(clipboardItem.KeyText, clipboardItem, current);
-            this.mainWindow.ListBox.SelectedIndex = current;
+            // base case 3: current is at the last index
+            if (current == total - 1)
+            {
+                // if box isn't checked, no wrapping or moving is needed
+                if (!this.mainWindow.WrapKeys.Checked)
+                    return;
+
+                // we will be wrapping to the top, so newIndex is set to the top index, i.e. 0
+                newIndex = 0;
+
+                // move current item to the top index if shift is pressed
+                if (e.Shift)
+                {
+                    this.Move(clipboardItem.KeyText, clipboardItem, newIndex);
+
+                    // wrap selected index to the top index only if the box is checked
+                    if (this.mainWindow.ChangeTopBottom.Checked)
+                        this.mainWindow.ListBox.SelectedIndex = newIndex;
+                    else
+                        this.mainWindow.ListBox.SelectedIndex = current;
+                }
+                // else don't move the current item, and wrap the selected index unconditionally
+                else
+                    this.mainWindow.ListBox.SelectedIndex = newIndex;
+
+                return;
+            }
+
+            // store whether the selected index should be changed
+            bool changeIndex = true;
+
+            // if ctrl is being pressed, set newIndex to the bottom index
+            if (e.Control)
+            {
+                newIndex = total - 1;
+
+                // selected index should be unchanged if we're moving an item 
+                // to the top/bottom, but the box is unchecked
+                if (e.Shift && !this.mainWindow.ChangeTopBottom.Checked)
+                    changeIndex = false;
+            }
+            // else set newIndex to current + 1
+            else
+            {
+                newIndex = current + 1;
+                // changeIndex is unconditionally true if ctrl isn't being pressed
+            }
+
+            // move item to new index if shift is pressed
+            if (e.Shift)
+                this.Move(clipboardItem.KeyText, clipboardItem, newIndex);
+
+            // move selected index to new index if bool is satisfied
+            if (changeIndex)
+                this.mainWindow.ListBox.SelectedIndex = newIndex;
+            else
+                this.mainWindow.ListBox.SelectedIndex = current;
         }
 
         public void Copy()

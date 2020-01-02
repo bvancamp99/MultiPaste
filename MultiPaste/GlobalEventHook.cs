@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -38,12 +39,29 @@ namespace MultiPaste
 
         protected override void WndProc(ref Message m)
         {
+            //const int WM_NCPAINT = 0x0085; // message sent to a window when its frame must be painted
             const int WM_DRAWCLIPBOARD = 0x0308; // clipboard changed event
             const int WM_CHANGECBCHAIN = 0x030D; // change clipboard chain event
             const int WM_HOTKEY = 0x0312; // hotkey pressed event
 
             switch (m.Msg)
             {
+                //case WM_NCPAINT:
+                //    // get MultiPaste's device context, which permits painting anywhere in the window
+                //    IntPtr hDC = GetWindowDC(this.Handle);
+
+                //    if ((int)hDC != 0)
+                //    {
+                //        Graphics graphics = Graphics.FromHdc(hDC);
+                //        Rectangle rectangle = new Rectangle(0, 0, 4800, 23);
+
+                //        graphics.FillRectangle(Brushes.Red, rectangle);
+                //        graphics.Flush();
+
+                //        ReleaseDC(this.Handle, hDC);
+                //    }
+                //    break;
+
                 case WM_DRAWCLIPBOARD:
                     if (mainWindow.Clipboard.HandleClipboard)
                         mainWindow.Clipboard.OnClipboardChange();
@@ -112,5 +130,21 @@ namespace MultiPaste
 
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        //[DllImport("User32.dll", CharSet = CharSet.Auto)]
+        //private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+        ///// <summary>
+        ///// The GetWindowDC function retrieves the device context (DC) for the 
+        ///// entire window, including title bar, menus, and scroll bars. A window 
+        ///// device context permits painting anywhere in a window, because the 
+        ///// origin of the device context is the upper-left corner of the window 
+        ///// instead of the client area.
+        ///// 
+        ///// </summary>
+        ///// <param name="hWnd"></param>
+        ///// <returns></returns>
+        //[DllImport("User32.dll")]
+        //private static extern IntPtr GetWindowDC(IntPtr hWnd);
     }
 }

@@ -92,7 +92,7 @@ namespace MultiPaste
         /// This method determines if the param is functionally equivalent to
         /// the current ClipboardItem instance.
         /// </summary>
-        /// <param name="duplicateKeyItem"></param>
+        /// <param name="duplicateKeyItem">ClipboardItem with the same key as this instance</param>
         /// <returns>whether or not the ClipboardItems are equivalent</returns>
         protected abstract bool IsEquivalent(ClipboardItem duplicateKeyItem);
     }
@@ -136,6 +136,10 @@ namespace MultiPaste
 
             // add to local clipboard with CLIPBOARD file
             this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
+
+            // move selected index to that of this instance if box is checked
+            if (this.mainWindow.MoveToCopied.Checked)
+                this.mainWindow.ListBox.SelectedIndex = this.mainWindow.Clipboard.Keys.IndexOf(this.KeyText);
 
             this.mainWindow.MsgLabel.Normal("Text item added!");
         }
@@ -192,7 +196,7 @@ namespace MultiPaste
         /// This method determines if the param is functionally equivalent to
         /// the current ClipboardItem instance.
         /// </summary>
-        /// <param name="duplicateKeyItem"></param>
+        /// <param name="duplicateKeyItem">ClipboardItem with the same key as this instance</param>
         /// <returns>whether or not the ClipboardItems are equivalent</returns>
         protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
         {
@@ -246,6 +250,10 @@ namespace MultiPaste
 
             // add to local clipboard with CLIPBOARD file
             this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
+
+            // move selected index to that of this instance if box is checked
+            if (this.mainWindow.MoveToCopied.Checked)
+                this.mainWindow.ListBox.SelectedIndex = this.mainWindow.Clipboard.Keys.IndexOf(this.KeyText);
 
             this.mainWindow.MsgLabel.Normal("File item added!");
         }
@@ -305,7 +313,7 @@ namespace MultiPaste
         /// This method determines if the param is functionally equivalent to
         /// the current ClipboardItem instance.
         /// </summary>
-        /// <param name="duplicateKeyItem"></param>
+        /// <param name="duplicateKeyItem">ClipboardItem with the same key as this instance</param>
         /// <returns>whether or not the ClipboardItems are equivalent</returns>
         protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
         {
@@ -374,6 +382,10 @@ namespace MultiPaste
             // add to local clipboard with CLIPBOARD file
             this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
+            // move selected index to that of this instance if box is checked
+            if (this.mainWindow.MoveToCopied.Checked)
+                this.mainWindow.ListBox.SelectedIndex = this.mainWindow.Clipboard.Keys.IndexOf(this.KeyText);
+
             this.mainWindow.MsgLabel.Normal("Image item added!");
         }
 
@@ -432,7 +444,7 @@ namespace MultiPaste
         /// This method determines if the param is functionally equivalent to
         /// the current ClipboardItem instance.
         /// </summary>
-        /// <param name="duplicateKeyItem"></param>
+        /// <param name="duplicateKeyItem">ClipboardItem with the same key as this instance</param>
         /// <returns>whether or not the ClipboardItems are equivalent</returns>
         protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
         {
@@ -517,6 +529,10 @@ namespace MultiPaste
             // add to local clipboard with CLIPBOARD file
             this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
+            // move selected index to that of this instance if box is checked
+            if (this.mainWindow.MoveToCopied.Checked)
+                this.mainWindow.ListBox.SelectedIndex = this.mainWindow.Clipboard.Keys.IndexOf(this.KeyText);
+
             this.mainWindow.MsgLabel.Normal("Audio item added!");
         }
 
@@ -562,7 +578,7 @@ namespace MultiPaste
         /// This method determines if the param is functionally equivalent to
         /// the current ClipboardItem instance.
         /// </summary>
-        /// <param name="duplicateKeyItem"></param>
+        /// <param name="duplicateKeyItem">ClipboardItem with the same key as this instance</param>
         /// <returns>whether or not the ClipboardItems are equivalent</returns>
         protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
         {
@@ -634,6 +650,10 @@ namespace MultiPaste
             // add to local clipboard with CLIPBOARD file
             this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
 
+            // move selected index to that of this instance if box is checked
+            if (this.mainWindow.MoveToCopied.Checked)
+                this.mainWindow.ListBox.SelectedIndex = this.mainWindow.Clipboard.Keys.IndexOf(this.KeyText);
+
             this.mainWindow.MsgLabel.Normal("Custom item added!");
         }
 
@@ -683,7 +703,7 @@ namespace MultiPaste
         /// This method determines if the param is functionally equivalent to
         /// the current ClipboardItem instance.
         /// </summary>
-        /// <param name="duplicateKeyItem"></param>
+        /// <param name="duplicateKeyItem">ClipboardItem with the same key as this instance</param>
         /// <returns>whether or not the ClipboardItems are equivalent</returns>
         protected override bool IsEquivalent(ClipboardItem duplicateKeyItem)
         {

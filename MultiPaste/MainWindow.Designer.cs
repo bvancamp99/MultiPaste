@@ -34,15 +34,24 @@
             this.fileDropDown = new System.Windows.Forms.ToolStripMenuItem();
             this.helpItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitItem = new System.Windows.Forms.ToolStripMenuItem();
             this.configDropDown = new System.Windows.Forms.ToolStripMenuItem();
+            this.winStartupItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.wrapKeysItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.moveToCopiedItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.changeTopBottomItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.colorThemeBox = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.defaultConfigItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dispDropDown = new System.Windows.Forms.ToolStripMenuItem();
             this.showTextItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showFilesItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showImagesItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showAudioItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showCustomItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.winStartupItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listBox = new System.Windows.Forms.ListBox();
             this.removeBtn = new System.Windows.Forms.Button();
             this.notifLabel = new System.Windows.Forms.Label();
@@ -60,7 +69,8 @@
             this.menuStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileDropDown,
-            this.configDropDown});
+            this.configDropDown,
+            this.optionsToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.Size = new System.Drawing.Size(609, 33);
@@ -72,10 +82,13 @@
             this.fileDropDown.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.helpItem,
             this.clearItem,
+            this.toolStripSeparator2,
             this.exitItem});
             this.fileDropDown.Name = "fileDropDown";
             this.fileDropDown.Size = new System.Drawing.Size(54, 29);
             this.fileDropDown.Text = "File";
+            this.fileDropDown.DropDownClosed += new System.EventHandler(this.RootToolStripMenuItem_DropDownClosed);
+            this.fileDropDown.DropDownOpening += new System.EventHandler(this.RootToolStripMenuItem_DropDownOpening);
             // 
             // helpItem
             // 
@@ -92,6 +105,11 @@
             this.clearItem.Text = "Clear All Copied Items";
             this.clearItem.Click += new System.EventHandler(this.ClearItem_Click);
             // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(286, 6);
+            // 
             // exitItem
             // 
             this.exitItem.Name = "exitItem";
@@ -103,11 +121,89 @@
             // configDropDown
             // 
             this.configDropDown.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.dispDropDown,
-            this.winStartupItem});
+            this.winStartupItem,
+            this.wrapKeysItem,
+            this.moveToCopiedItem,
+            this.changeTopBottomItem,
+            this.toolStripSeparator1,
+            this.colorThemeBox,
+            this.toolStripSeparator3,
+            this.defaultConfigItem});
             this.configDropDown.Name = "configDropDown";
             this.configDropDown.Size = new System.Drawing.Size(81, 29);
             this.configDropDown.Text = "Config";
+            this.configDropDown.DropDownClosed += new System.EventHandler(this.RootToolStripMenuItem_DropDownClosed);
+            this.configDropDown.DropDownOpening += new System.EventHandler(this.RootToolStripMenuItem_DropDownOpening);
+            // 
+            // winStartupItem
+            // 
+            this.winStartupItem.CheckOnClick = true;
+            this.winStartupItem.Name = "winStartupItem";
+            this.winStartupItem.Size = new System.Drawing.Size(499, 34);
+            this.winStartupItem.Text = "Run on Windows Startup";
+            this.winStartupItem.Click += new System.EventHandler(this.WinStartupItem_Click);
+            // 
+            // wrapKeysItem
+            // 
+            this.wrapKeysItem.CheckOnClick = true;
+            this.wrapKeysItem.Name = "wrapKeysItem";
+            this.wrapKeysItem.Size = new System.Drawing.Size(499, 34);
+            this.wrapKeysItem.Text = "Wrap Up/Down Arrow Keys";
+            this.wrapKeysItem.Click += new System.EventHandler(this.WrapKeysItem_Click);
+            // 
+            // moveToCopiedItem
+            // 
+            this.moveToCopiedItem.CheckOnClick = true;
+            this.moveToCopiedItem.Name = "moveToCopiedItem";
+            this.moveToCopiedItem.Size = new System.Drawing.Size(499, 34);
+            this.moveToCopiedItem.Text = "Move Index to Copied Item";
+            this.moveToCopiedItem.Click += new System.EventHandler(this.MoveToCopiedItem_Click);
+            // 
+            // changeTopBottomItem
+            // 
+            this.changeTopBottomItem.CheckOnClick = true;
+            this.changeTopBottomItem.Name = "changeTopBottomItem";
+            this.changeTopBottomItem.Size = new System.Drawing.Size(499, 34);
+            this.changeTopBottomItem.Text = "Change Index when Moving Item to Top/Bottom";
+            this.changeTopBottomItem.Click += new System.EventHandler(this.ChangeTopBottomItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(496, 6);
+            // 
+            // colorThemeBox
+            // 
+            this.colorThemeBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.colorThemeBox.Items.AddRange(new object[] {
+            "Light",
+            "Dark"});
+            this.colorThemeBox.Name = "colorThemeBox";
+            this.colorThemeBox.Size = new System.Drawing.Size(121, 33);
+            this.colorThemeBox.ToolTipText = "Select color theme";
+            this.colorThemeBox.DropDownClosed += new System.EventHandler(this.ColorThemeBox_DropDownClosed);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(496, 6);
+            // 
+            // defaultConfigItem
+            // 
+            this.defaultConfigItem.Name = "defaultConfigItem";
+            this.defaultConfigItem.Size = new System.Drawing.Size(499, 34);
+            this.defaultConfigItem.Text = "Set All to Default Settings";
+            this.defaultConfigItem.Click += new System.EventHandler(this.DefaultConfigItem_Click);
+            // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.dispDropDown});
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(142, 29);
+            this.optionsToolStripMenuItem.Text = "Other Options";
+            this.optionsToolStripMenuItem.DropDownClosed += new System.EventHandler(this.RootToolStripMenuItem_DropDownClosed);
+            this.optionsToolStripMenuItem.DropDownOpening += new System.EventHandler(this.RootToolStripMenuItem_DropDownOpening);
             // 
             // dispDropDown
             // 
@@ -176,14 +272,6 @@
             this.showCustomItem.Text = "Custom";
             this.showCustomItem.Click += new System.EventHandler(this.ShowCustomItem_Click);
             // 
-            // winStartupItem
-            // 
-            this.winStartupItem.CheckOnClick = true;
-            this.winStartupItem.Name = "winStartupItem";
-            this.winStartupItem.Size = new System.Drawing.Size(342, 34);
-            this.winStartupItem.Text = "Run on Windows Startup";
-            this.winStartupItem.Click += new System.EventHandler(this.WinStartupItem_Click);
-            // 
             // listBox
             // 
             this.listBox.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -200,8 +288,10 @@
             // removeBtn
             // 
             this.removeBtn.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.removeBtn.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+            this.removeBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.removeBtn.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.removeBtn.Location = new System.Drawing.Point(435, 42);
+            this.removeBtn.Location = new System.Drawing.Point(436, 45);
             this.removeBtn.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.removeBtn.Name = "removeBtn";
             this.removeBtn.Size = new System.Drawing.Size(154, 51);
@@ -295,13 +385,22 @@
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem helpItem;
+        private System.Windows.Forms.ToolStripMenuItem wrapKeysItem;
+        private System.Windows.Forms.ToolStripMenuItem moveToCopiedItem;
+        private System.Windows.Forms.ToolStripMenuItem changeTopBottomItem;
+        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem dispDropDown;
         private System.Windows.Forms.ToolStripMenuItem showTextItem;
         private System.Windows.Forms.ToolStripMenuItem showFilesItem;
         private System.Windows.Forms.ToolStripMenuItem showImagesItem;
         private System.Windows.Forms.ToolStripMenuItem showAudioItem;
         private System.Windows.Forms.ToolStripMenuItem showCustomItem;
-        private System.Windows.Forms.ToolStripMenuItem helpItem;
+        private System.Windows.Forms.ToolStripMenuItem defaultConfigItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripComboBox colorThemeBox;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
     }
 }
 

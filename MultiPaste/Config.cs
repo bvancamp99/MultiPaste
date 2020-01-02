@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,8 @@ namespace MultiPaste
 {
     class Config
     {
+        private const int CONFIG_SIZE = 5; // num bytes that a valid CONFIG file would be; depends on number of config settings
+
         private readonly MainWindow mainWindow; // store MainWindow instance to access its variables
 
         public Config(MainWindow mainWindow)
@@ -25,19 +28,6 @@ namespace MultiPaste
         /// config file directory
         /// </summary>
         public string ConfigFile { get; }
-
-        public void UpdateFile()
-        {
-            // init FileStream to write to file
-            FileStream fileStream = new FileStream(this.ConfigFile, FileMode.Create);
-
-            // before writing, clear config or create new empty file if it was unexpectedly deleted
-            using (fileStream)
-            {
-                // write applicable bools to file
-                fileStream.WriteByte(Convert.ToByte(this.mainWindow.WinStartup.Checked));
-            }
-        }
 
         public void WinStartupRegistry()
         {
@@ -57,16 +47,169 @@ namespace MultiPaste
             FileStream fileStream = new FileStream(this.ConfigFile, FileMode.OpenOrCreate);
             using (fileStream)
             {
-                // if length is 0, the file was probably removed or misplaced; set to default values
-                if (fileStream.Length == 0)
-                    this.mainWindow.WinStartup.Checked = true;
-                // else read bytes and assign to the appropriate properties
+                // check for valid CONFIG file size
+                if (fileStream.Length == Config.CONFIG_SIZE)
+                {
+                    // read bytes and assign to the appropriate properties
+                    this.mainWindow.WinStartup.Checked = Convert.ToBoolean(fileStream.ReadByte());
+                    this.mainWindow.WrapKeys.Checked = Convert.ToBoolean(fileStream.ReadByte());
+                    this.mainWindow.MoveToCopied.Checked = Convert.ToBoolean(fileStream.ReadByte());
+                    this.mainWindow.ChangeTopBottom.Checked = Convert.ToBoolean(fileStream.ReadByte());
+
+                    // read ColorTheme from file
+                    this.mainWindow.ColorThemeBox.SelectedIndex = fileStream.ReadByte();
+                }
+                // else CONFIG file is invalid
                 else
-                    this.mainWindow.WinStartup.Checked = Convert.ToBoolean((byte)fileStream.ReadByte());
+                {
+                    // load default config
+                    this.LoadDefaults(fileStream);
+                }
             }
 
-            // update registry for winStartup
+            // update registry for WinStartup
             this.WinStartupRegistry();
+
+            // update ColorTheme of MultiPaste
+            this.ChangeTheme();
+        }
+
+        public void UpdateFile()
+        {
+            // init FileStream to write to file
+            FileStream fileStream = new FileStream(this.ConfigFile, FileMode.Create);
+
+            // before writing, clear config or create new empty file if it was unexpectedly deleted
+            using (fileStream)
+            {
+                // call helper with fileStream as arg
+                this.UpdateFile(fileStream);
+            }
+        }
+
+        /// <summary>
+        /// UpdateFile with an initialized FileStream as a parameter
+        /// 
+        /// This method is used if the caller already has a FileStream 
+        /// instance to the CONFIG file.
+        /// </summary>
+        /// <param name="fileStream">FileStream to the CONFIG file</param>
+        private void UpdateFile(FileStream fileStream)
+        {
+            // write applicable bools to file
+            fileStream.WriteByte(Convert.ToByte(this.mainWindow.WinStartup.Checked));
+            fileStream.WriteByte(Convert.ToByte(this.mainWindow.WrapKeys.Checked));
+            fileStream.WriteByte(Convert.ToByte(this.mainWindow.MoveToCopied.Checked));
+            fileStream.WriteByte(Convert.ToByte(this.mainWindow.ChangeTopBottom.Checked));
+
+            // write selected ColorTheme to file
+            fileStream.WriteByte((byte)this.mainWindow.ColorThemeBox.SelectedIndex);
+        }
+
+        public void LoadDefaults()
+        {
+            // init FileStream to write to file
+            FileStream fileStream = new FileStream(this.ConfigFile, FileMode.Create);
+
+            // before writing, clear config or create new empty file if it was unexpectedly deleted
+            using (fileStream)
+            {
+                // call helper with fileStream as arg
+                this.LoadDefaults(fileStream);
+            }
+        }
+
+        /// <summary>
+        /// LoadDefaults with an initialized FileStream as a parameter
+        /// 
+        /// This method is used if the caller already has a FileStream 
+        /// instance to the CONFIG file.
+        /// </summary>
+        /// <param name="fileStream">FileStream to the CONFIG file</param>
+        private void LoadDefaults(FileStream fileStream)
+        {
+            // set to default values
+            this.mainWindow.WinStartup.Checked = true;
+            this.mainWindow.WrapKeys.Checked = false;
+            this.mainWindow.MoveToCopied.Checked = true;
+            this.mainWindow.ChangeTopBottom.Checked = true;
+            this.mainWindow.ColorThemeBox.SelectedIndex = (int)MainWindow.ColorTheme.Light;
+
+            // update registry for WinStartup
+            this.WinStartupRegistry();
+
+            // update ColorTheme of MultiPaste
+            this.ChangeTheme();
+
+            // write default values to CONFIG file
+            this.UpdateFile(fileStream);
+        }
+
+        public void ChangeTheme()
+        {
+            // determine which argb collection should be used
+            MainWindow.ColorTheme colorTheme = (MainWindow.ColorTheme)this.mainWindow.ColorThemeBox.SelectedIndex;
+            switch (colorTheme)
+            {
+                case MainWindow.ColorTheme.Light:
+                    this.ChangeTheme(Themes.Light);
+                    break;
+
+                case MainWindow.ColorTheme.Dark:
+                    this.ChangeTheme(Themes.Dark);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// ChangeTheme with an ArgbCollection as a parameter
+        /// 
+        /// This method is used if the caller already has a 
+        /// specified color theme to pass.
+        /// </summary>
+        /// <param name="myTheme">ArgbCollection that represents the selected color theme</param>
+        private void ChangeTheme(ArgbCollection myTheme)
+        {
+            // set main window's background color
+            this.mainWindow.BackColor = myTheme.Background.GetColor();
+
+            // set color of each control based on type
+            foreach (Control control in this.mainWindow.Controls)
+            {
+                if (control is MenuStrip)
+                {
+                    control.BackColor = myTheme.MenuStrip.GetColor();
+
+                    // update font color of each menu item
+                    foreach (ToolStripItem item in ((MenuStrip)control).Items)
+                    {
+                        item.ForeColor = myTheme.Font.GetColor();
+                    }
+                }
+                else if (control is Button)
+                {
+                    control.BackColor = myTheme.Cards.GetColor();
+                    //((Button)control).FlatAppearance.BorderSize = 0;
+                }
+                else if (control is ListBox)
+                {
+                    control.BackColor = myTheme.Cards.GetColor();
+
+                    //((ListBox)control).BorderStyle = BorderStyle.None; // TODO: temporary
+
+                    // TODO: unable to set border color of ListBox; draw gray rectangle instead
+                    //Pen pen = new Pen(Color.Red);
+                    //pen.Width = 5;
+                    //Graphics gfx = this.mainWindow.CreateGraphics();
+                    //Rectangle rectangle = new Rectangle(control.Location.X, 
+                    //    control.Location.Y, control.Width, control.Height);
+
+                    //gfx.DrawRectangle(pen, rectangle);
+                }
+
+                // set font color
+                control.ForeColor = myTheme.Font.GetColor();
+            }
         }
     }
 }

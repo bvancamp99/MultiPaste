@@ -53,6 +53,11 @@ namespace MultiPaste
                     this.Clipboard.Copy();
                     break;
 
+                case Keys.C:
+                    // copy selected item to clipboard on ctrl + c
+                    if (e.Control) this.Clipboard.Copy();
+                    break;
+
                 case Keys.Delete:
                     // programmatically click the Remove button
                     this.removeBtn.PerformClick();
@@ -65,8 +70,7 @@ namespace MultiPaste
 
                 case Keys.F4:
                     // minimize to system tray on Alt + F4
-                    if (e.Alt)
-                        this.Visible = false;
+                    if (e.Alt) this.Visible = false;
                     break;
             }
 
@@ -169,6 +173,40 @@ namespace MultiPaste
             Application.Exit();
         }
 
+        private void RootToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            // store selected color theme
+            MainWindow.ColorTheme colorTheme = (MainWindow.ColorTheme)this.colorThemeBox.SelectedIndex;
+
+            // if color theme is dark
+            if (colorTheme == MainWindow.ColorTheme.Dark)
+            {
+                // change font color temporarily (for visibility)
+                ToolStripMenuItem myItem = (ToolStripMenuItem)sender;
+                if (myItem != null)
+                {
+                    myItem.ForeColor = Themes.Light.Font.GetColor();
+                }
+            }
+        }
+
+        private void RootToolStripMenuItem_DropDownClosed(object sender, EventArgs e)
+        {
+            // store selected color theme
+            MainWindow.ColorTheme colorTheme = (MainWindow.ColorTheme)this.colorThemeBox.SelectedIndex;
+
+            // if color theme is dark
+            if (colorTheme == MainWindow.ColorTheme.Dark)
+            {
+                // change font color back to the dark theme's default
+                ToolStripMenuItem myItem = (ToolStripMenuItem)sender;
+                if (myItem != null)
+                {
+                    myItem.ForeColor = Themes.Dark.Font.GetColor();
+                }
+            }
+        }
+
         private void WinStartupItem_Click(object sender, EventArgs e)
         {
             // update Windows startup process
@@ -176,6 +214,44 @@ namespace MultiPaste
 
             // update CONFIG file
             this.Config.UpdateFile();
+        }
+
+        private void WrapKeysItem_Click(object sender, EventArgs e)
+        {
+            // update CONFIG file
+            this.Config.UpdateFile();
+        }
+
+        private void MoveToCopiedItem_Click(object sender, EventArgs e)
+        {
+            // update CONFIG file
+            this.Config.UpdateFile();
+        }
+
+        private void ChangeTopBottomItem_Click(object sender, EventArgs e)
+        {
+            // update CONFIG file
+            this.Config.UpdateFile();
+        }
+
+        private void ColorThemeBox_DropDownClosed(object sender, EventArgs e)
+        {
+            // update color theme of MultiPaste
+            this.Config.ChangeTheme();
+
+            // update CONFIG file
+            this.Config.UpdateFile();
+
+            // change font color of the config drop down if needed
+            this.RootToolStripMenuItem_DropDownOpening(this.configDropDown, null);
+        }
+
+        private void DefaultConfigItem_Click(object sender, EventArgs e)
+        {
+            // load default config
+            this.Config.LoadDefaults();
+
+            this.MsgLabel.Normal("Default config loaded!");
         }
 
         private void HelpItem_Click(object sender, EventArgs e)
