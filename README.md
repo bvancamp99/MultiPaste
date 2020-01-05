@@ -14,29 +14,25 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Working on </h3>
 <ul>
-  <li>Implement the selectedindexchanged event handler and set selectedindex on program startup based on CONFIG file.  Default should be light mode.  Also need to implement what each color theme should look like, i.e. rgb values.</li>
-  <li>ChangeTheme method in Config.cs</li>
-  <li>Changing the border color of a listbox (no native support)</li>
+  <li>Option to edit items.  Currently, we use an "edit" button.  We could also give the edit option via separate menu items in the Other Options dropdown, e.g. "Edit text item" or "Edit file item."  Although it might be better just to have one menu item and/or one button for editing, and the window that pops up is dynamically determined based on the type of ClipboardItem.  This would mean we need to make separate forms for each ClipboardItem type, so at most 5 (could be less if we can conflate, say, forms for the items that use a file system).</li>
 </ul>
 
 <h3> Fix </h3>
 <ul>
-  <li>Icon in system tray needs to be programmatically removed on program exit.  Otherwise multiple icons will linger in the system tray (which was noticed recently and now I know the reason!).</li>
-  <li>AudioItem is implemented, but a method of testing it is yet to be found.  Stream.Length might serve as a problem, since its documentation seems to imply that it's only supported in derived classes that use Length.</li>
+  <li>AudioItem is implemented, but a method of testing it is yet to be found.  Stream.Length might serve as a problem, since its documentation seems to imply that it's only supported in derived classes that **use** Length.</li>
 </ul>
 
 <h3> Improve </h3>
 <ul>
+  <li>Work on overall color theme implementation, including: changing the border color of a listbox (no native support); Argb implementation; more color theme options.</li>
   <li>Maybe "enter" keypress should give options to edit the item rather than copy it.  It would provide a popup with a textbox.  This edit option should also be available in the context menu (would open popup as normal).</li>
   <li>Review and maybe improve upon the implementation of OnKeyUp and OnKeyDown.  They're kind of a mess again.</li>
   <li>Maybe move the OnKeyUp and OnKeyDown methods to MainWindow.Events.cs</li>
   <li>Could potentially conflate IsEquivalent on ImageItem, AudioItem, and CustomItem.  Would need to create file before comparing the ClipboardItems (if possible).  Then we would compare byte length of the files first, then maybe do more checking if that bool returns true (although byte-by-byte checking could become VERY slow).</li>
   <li>Not sure if this would be possible, but making MainWindow static would make a lot of sense.  Then we don't have to pass copies of its instance around to every class.  Issue is then it can't inherit from the Form class (which isn't static).</li>
-  <li>ushort -> int; simpler that way</li>
   <li>Would like to improve ClipboardItem.SetKeyDiff.  It does a lot of things that don't make sense without significant context.  Would also like to move it to LocalClipboard.cs</li>
   <li>Show copied images on the listbox</li>
   <li>Work on MsgLabel and think about desired implementation</li>
-  <li>Catch errors thrown and write to an error log file.  Could be like in CS 536's ErrMsg.java file, which has static methods fatal and warning.  If warning, write to error log and notify user.  If failure, prog would probably have to close, but the user can refer to the error log for details.  Should display the error, along with line num of the CLIPBOARD file; maybe some additional things.</li>
   <li>ImageItem.IsEquivalent - with experience, I think it would be better to replace with new image if same size</li>
   <li>CustomItem.IsEquivalent</li>
   <li>Keep menuStrip open when a toggle check item is clicked.</li>
@@ -44,8 +40,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Add </h3>
 <ul>
-  <li>Move Argb struct instances outside of ChangeTheme method.  Could put in a struct that stores argb things</li>
-  <li>When entering the main parent toolstripmenuitem in dark theme, change text color back to black.  Use the enter and leave events.</li>
+  <li>Add options to open items from file.  This would be 1) a good feature and 2) finally a way to test AudioItem!  Only allow text files for text items, any file for file items, image files for image items, and audio files for audio items</li>
   <li>Maybe make MultiPaste slightly translucent?  Like ~90% opacity?</li>
   <li>Would like to make MultiPaste resizable</li>
   <li>Maybe give a custom color theme option, where the user can choose rgb values.  Would probably need to import a library to make it more interactive/easy to use (like a slider or something, with the color shown on the side).</li>

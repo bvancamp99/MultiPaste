@@ -189,22 +189,10 @@ namespace MultiPaste
                 else if (control is Button)
                 {
                     control.BackColor = myTheme.Cards.GetColor();
-                    //((Button)control).FlatAppearance.BorderSize = 0;
                 }
                 else if (control is ListBox)
                 {
                     control.BackColor = myTheme.Cards.GetColor();
-
-                    //((ListBox)control).BorderStyle = BorderStyle.None; // TODO: temporary
-
-                    // TODO: unable to set border color of ListBox; draw gray rectangle instead
-                    //Pen pen = new Pen(Color.Red);
-                    //pen.Width = 5;
-                    //Graphics gfx = this.mainWindow.CreateGraphics();
-                    //Rectangle rectangle = new Rectangle(control.Location.X, 
-                    //    control.Location.Y, control.Width, control.Height);
-
-                    //gfx.DrawRectangle(pen, rectangle);
                 }
 
                 // set font color

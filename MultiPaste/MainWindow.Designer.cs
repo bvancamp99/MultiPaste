@@ -59,6 +59,7 @@
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editBtn = new System.Windows.Forms.Button();
             this.menuStrip.SuspendLayout();
             this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -73,7 +74,7 @@
             this.optionsToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(609, 33);
+            this.menuStrip.Size = new System.Drawing.Size(609, 35);
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "menuStrip";
             // 
@@ -303,7 +304,7 @@
             // notifLabel
             // 
             this.notifLabel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.notifLabel.Location = new System.Drawing.Point(178, 55);
+            this.notifLabel.Location = new System.Drawing.Point(178, 58);
             this.notifLabel.Name = "notifLabel";
             this.notifLabel.Size = new System.Drawing.Size(249, 23);
             this.notifLabel.TabIndex = 4;
@@ -340,12 +341,28 @@
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitItem_Click);
             // 
+            // editBtn
+            // 
+            this.editBtn.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.editBtn.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+            this.editBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.editBtn.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.editBtn.Location = new System.Drawing.Point(17, 45);
+            this.editBtn.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.editBtn.Name = "editBtn";
+            this.editBtn.Size = new System.Drawing.Size(154, 51);
+            this.editBtn.TabIndex = 5;
+            this.editBtn.Text = "Edit";
+            this.editBtn.UseVisualStyleBackColor = false;
+            this.editBtn.Click += new System.EventHandler(this.EditBtn_Click);
+            // 
             // MainWindow
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(609, 446);
+            this.Controls.Add(this.editBtn);
             this.Controls.Add(this.notifLabel);
             this.Controls.Add(this.removeBtn);
             this.Controls.Add(this.listBox);
@@ -401,6 +418,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripComboBox colorThemeBox;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.Button editBtn;
     }
 }
 
