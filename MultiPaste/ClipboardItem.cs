@@ -144,15 +144,15 @@ namespace MultiPaste
             this.mainWindow.MsgLabel.Normal("Text item added!");
         }
 
-        public TextItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
+        public TextItem(MainWindow mainWindow, ushort keyDiff, StringReader stringReader)
             : base(mainWindow, TypeEnum.Text, keyDiff)
         {
             // retrieve number of chars in Text
-            int textSize = int.Parse(streamReader.ReadLine());
+            int textSize = int.Parse(stringReader.ReadLine());
 
             // read textSize num chars from the file to a char array
             char[] textArr = new char[textSize];
-            streamReader.Read(textArr, 0, textSize);
+            stringReader.Read(textArr, 0, textSize);
 
             // store char array as Text
             this.Text = new string(textArr);
@@ -258,16 +258,16 @@ namespace MultiPaste
             this.mainWindow.MsgLabel.Normal("File item added!");
         }
 
-        public FileItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
+        public FileItem(MainWindow mainWindow, ushort keyDiff, StringReader stringReader)
             : base(mainWindow, TypeEnum.FileDropList, keyDiff)
         {
             // retrieve number of strings in FileDropList
-            int listCount = int.Parse(streamReader.ReadLine());
+            int listCount = int.Parse(stringReader.ReadLine());
 
             // read each string into FileDropList
             this.FileDropList = new StringCollection();
             for (int i = 0; i < listCount; i++)
-                this.FileDropList.Add(streamReader.ReadLine());
+                this.FileDropList.Add(stringReader.ReadLine());
 
             // if 1 file was copied, KeyText will store FileDropList[0]'s filename
             if (this.FileDropList.Count == 1)
@@ -389,14 +389,14 @@ namespace MultiPaste
             this.mainWindow.MsgLabel.Normal("Image item added!");
         }
 
-        public ImageItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
+        public ImageItem(MainWindow mainWindow, ushort keyDiff, StringReader stringReader)
             : base(mainWindow, TypeEnum.Image, keyDiff)
         {
             // retrieve width int
-            int width = int.Parse(streamReader.ReadLine());
+            int width = int.Parse(stringReader.ReadLine());
 
             // retrieve height int
-            int height = int.Parse(streamReader.ReadLine());
+            int height = int.Parse(stringReader.ReadLine());
 
             // init Size with width and height args
             this.Size = new Size(width, height);
@@ -420,12 +420,12 @@ namespace MultiPaste
                 this.Size.Width.ToString() + Environment.NewLine + this.Size.Height.ToString() + 
                 Environment.NewLine;
 
-            // if image file is missing, remove item data from the temp CLIPBOARD file and return
+            // if image file is missing, remove item data from the CLIPBOARD file and return
             string imageFolder = this.mainWindow.Clipboard.ImageFolder;
             if (!File.Exists(Path.Combine(imageFolder, this.KeyText)))
             {
-                string tempFile = this.mainWindow.Clipboard.TempFile;
-                File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(this.FileChars, ""));
+                string clipboardFile = this.mainWindow.Clipboard.ClipboardFile;
+                File.WriteAllText(clipboardFile, File.ReadAllText(clipboardFile).Replace(this.FileChars, ""));
                 return;
             }
 
@@ -536,12 +536,12 @@ namespace MultiPaste
             this.mainWindow.MsgLabel.Normal("Audio item added!");
         }
 
-        public AudioItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
+        public AudioItem(MainWindow mainWindow, ushort keyDiff, StringReader stringReader)
             : base(mainWindow, TypeEnum.Audio, keyDiff)
         {
             // retrieving ByteLength and KeyText from the stream
-            this.ByteLength = long.Parse(streamReader.ReadLine());
-            this.KeyText = streamReader.ReadLine();
+            this.ByteLength = long.Parse(stringReader.ReadLine());
+            this.KeyText = stringReader.ReadLine();
 
             /// Char order:
             /// 
@@ -554,12 +554,12 @@ namespace MultiPaste
             this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine + 
                 this.ByteLength.ToString() + Environment.NewLine + this.KeyText + Environment.NewLine;
 
-            // if audio file is missing, remove item data from the temp CLIPBOARD file and return
+            // if audio file is missing, remove item data from the CLIPBOARD file and return
             string audioFolder = this.mainWindow.Clipboard.AudioFolder;
             if (!File.Exists(Path.Combine(audioFolder, this.KeyText)))
             {
-                string tempFile = this.mainWindow.Clipboard.TempFile;
-                File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(this.FileChars, ""));
+                string clipboardFile = this.mainWindow.Clipboard.ClipboardFile;
+                File.WriteAllText(clipboardFile, File.ReadAllText(clipboardFile).Replace(this.FileChars, ""));
                 return;
             }
 
@@ -657,11 +657,11 @@ namespace MultiPaste
             this.mainWindow.MsgLabel.Normal("Custom item added!");
         }
 
-        public CustomItem(MainWindow mainWindow, ushort keyDiff, StreamReader streamReader)
+        public CustomItem(MainWindow mainWindow, ushort keyDiff, StringReader stringReader)
             : base(mainWindow, TypeEnum.Custom, keyDiff)
         {
             // retrieving WritableFormat from the stream
-            this.WritableFormat = streamReader.ReadLine();
+            this.WritableFormat = stringReader.ReadLine();
 
             // set KeyText using WritableFormat
             this.KeyText = "Custom (" + this.WritableFormat + ")";
@@ -679,12 +679,12 @@ namespace MultiPaste
 
             FileChars = (char)Type + KeyDiff.ToString() + Environment.NewLine + WritableFormat + Environment.NewLine;
 
-            // if custom file is missing, remove item data from the temp CLIPBOARD file and return
+            // if custom file is missing, remove item data from the CLIPBOARD file and return
             string customFolder = this.mainWindow.Clipboard.CustomFolder;
             if (!File.Exists(Path.Combine(customFolder, this.KeyText)))
             {
-                string tempFile = this.mainWindow.Clipboard.TempFile;
-                File.WriteAllText(tempFile, File.ReadAllText(tempFile).Replace(this.FileChars, ""));
+                string clipboardFile = this.mainWindow.Clipboard.ClipboardFile;
+                File.WriteAllText(clipboardFile, File.ReadAllText(clipboardFile).Replace(this.FileChars, ""));
                 return;
             }
 

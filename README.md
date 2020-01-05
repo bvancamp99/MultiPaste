@@ -14,7 +14,8 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Working on </h3>
 <ul>
-  <li>Option to edit items.  Currently, we use an "edit" button.  We could also give the edit option via separate menu items in the Other Options dropdown, e.g. "Edit text item" or "Edit file item."  Although it might be better just to have one menu item and/or one button for editing, and the window that pops up is dynamically determined based on the type of ClipboardItem.  This would mean we need to make separate forms for each ClipboardItem type, so at most 5 (could be less if we can conflate, say, forms for the items that use a file system).</li>
+  <li>Use instances of FileInfo/DirectoryInfo instead of strings for files/folders.  Those classes include a lot of cool stuff and would be useful to have on-hand!</li>
+  <li>Option to edit items.  This feature could be offered via separate menu items in the Other Options dropdown, e.g. "Edit text item" or "Edit file item."  Although it might be better just to have one menu item and/or one button for editing, and the window that pops up is dynamically determined based on the type of ClipboardItem.  This would mean we need to make separate forms for each ClipboardItem type, so at most 5 (could be less if we can conflate, say, forms for the items that use a file system).</li>
 </ul>
 
 <h3> Fix </h3>
@@ -24,6 +25,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Improve </h3>
 <ul>
+  <li>Okay, so I know that we just reverted back to non-static classes.  But man it would really make a lot of sense for GlobalEventHook, LocalClipboard, Config, and MsgLabel to be static.  This is because we only ever make one instance of each, and their contents are accessed in a variety of classes.</li>
   <li>Work on overall color theme implementation, including: changing the border color of a listbox (no native support); Argb implementation; more color theme options.</li>
   <li>Maybe "enter" keypress should give options to edit the item rather than copy it.  It would provide a popup with a textbox.  This edit option should also be available in the context menu (would open popup as normal).</li>
   <li>Review and maybe improve upon the implementation of OnKeyUp and OnKeyDown.  They're kind of a mess again.</li>

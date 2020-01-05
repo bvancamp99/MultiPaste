@@ -21,7 +21,7 @@ namespace MultiPaste
         {
             this.mainWindow = mainWindow;
 
-            this.ConfigFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CONFIG");
+            this.ConfigFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CONFIG.mp");
         }
 
         /// <summary>

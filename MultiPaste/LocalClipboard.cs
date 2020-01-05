@@ -25,8 +25,10 @@ namespace MultiPaste
             this.Keys = new StringCollection();
             this.HandleClipboard = true;
 
-            this.ClipboardFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CLIPBOARD");
-            this.TempFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
+            // init readonly properties denoting directories of files/folders
+            this.ClipboardFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CLIPBOARD.mp");
+            this.BackupFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CLIPBOARD.bak");
+            //this.TempFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
             this.ImageFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images");
             this.AudioFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Audio");
             this.CustomFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Custom");
@@ -53,9 +55,14 @@ namespace MultiPaste
         public string ClipboardFile { get; }
 
         /// <summary>
-        /// temp clipboard file, used when adding items from file on startup
+        /// directory for clipboard file backup
         /// </summary>
-        public string TempFile { get; }
+        public string BackupFile { get; }
+
+        ///// <summary>
+        ///// temp clipboard file, used when adding items from file on startup
+        ///// </summary>
+        //public string TempFile { get; }
 
         /// <summary>
         /// image folder directory
@@ -130,9 +137,29 @@ namespace MultiPaste
 
         public void Add(string key, ClipboardItem value)
         {
-            this.mainWindow.ListBox.Items.Insert(0, key);
+            // add to back-end dict
+            try
+            {
+                this.Dict.Add(key, value);
+            }
+            // exception thrown on attempt to add a duplicate key to the dict
+            catch (ArgumentException)
+            {
+                // store item with the same key
+                ClipboardItem duplicateKeyItem = this.Dict[key];
+
+                // remove old item and prepare to replace with new item
+                this.Remove(duplicateKeyItem.KeyText, duplicateKeyItem);
+
+                // add new item to dict
+                this.Dict.Add(key, value);
+            }
+
+            // add to back-end string collection of keys
             this.Keys.Insert(0, key);
-            this.Dict.Add(key, value);
+
+            // add to visual clipboard last
+            this.mainWindow.ListBox.Items.Insert(0, key);
         }
 
         public void AddWithFile(string key, ClipboardItem value)
@@ -149,12 +176,12 @@ namespace MultiPaste
                 }
             }
 
-            // add to data structures in the local clipboard
-            this.Add(key, value);
-
             // append the item's FileChars to the CLIPBOARD file
             using (StreamWriter streamWriter = new StreamWriter(this.ClipboardFile, true))
                 streamWriter.Write(value.FileChars);
+
+            // add to data structures in the local clipboard
+            this.Add(key, value);
         }
 
         public void Insert(string key, ClipboardItem value, int index)
@@ -181,10 +208,37 @@ namespace MultiPaste
 
         public void Remove(string key, ClipboardItem value)
         {
-            // if CLIPBOARD file exists and isn't empty, CLIPBOARD file -= this item's FileChars
-            if (File.Exists(this.ClipboardFile) && new FileInfo(this.ClipboardFile).Length > 0)
+            // String.Replace replaces all instances of a string.  This local
+            // function instead replaces only the first instance of the string.
+            string ReplaceFirst(string oldText, string strToReplace, string replacement)
             {
-                string newText = File.ReadAllText(this.ClipboardFile).Replace(value.FileChars, "");
+                // find index of the first occurrence of strToReplace in oldText
+                int pos = oldText.IndexOf(strToReplace);
+
+                // IndexOf returns -1 if string not found
+                if (pos == -1)
+                {
+                    // nothing to replace; return oldText
+                    return oldText;
+                }
+
+                // replace strToReplace with the replacement string, and store into the return string
+                string newText = oldText.Substring(0, pos) + replacement + oldText.Substring(pos + strToReplace.Length);
+
+                return newText;
+            }
+
+            // make sure the CLIPBOARD file exists and is non-empty
+            FileInfo fileInfo = new FileInfo(this.ClipboardFile);
+            if (fileInfo.Exists && fileInfo.Length > 0)
+            {
+                // store oldText, the old contents of the CLIPBOARD file
+                string oldText = File.ReadAllText(this.ClipboardFile);
+
+                // newText = oldText - this item's FileChars
+                string newText = ReplaceFirst(oldText, value.FileChars, "");
+
+                // replace old contents of the CLIPBOARD file with newText
                 File.WriteAllText(this.ClipboardFile, newText);
             }
 
@@ -625,49 +679,59 @@ namespace MultiPaste
             if (!File.Exists(this.ClipboardFile) || new FileInfo(this.ClipboardFile).Length <= 0)
                 return;
 
-            // if any data files are missing, this temp CLIPBOARD file will be updated
-            File.WriteAllText(this.TempFile, File.ReadAllText(this.ClipboardFile));
+            // clipboardString = old contents of the CLIPBOARD file
+            string clipboardString = File.ReadAllText(this.ClipboardFile);
 
-            // traverse and store the contents of the file into new instances of ClipboardItem's derived classes
-            using (StreamReader streamReader = new StreamReader(this.ClipboardFile))
+            //// if any data files are missing, this temp CLIPBOARD file will be updated
+            //File.WriteAllText(this.TempFile, clipboardString);
+
+            // backup file contents = clipboardString
+            File.WriteAllText(this.BackupFile, clipboardString);
+
+            // traverse clipboardString to make new instances of 
+            // ClipboardItem's derived classes
+            StringReader stringReader = new StringReader(clipboardString);
+            using (stringReader)
             {
-                while (!streamReader.EndOfStream)
+                // peek returns -1 if no more characters are available
+                while (stringReader.Peek() != -1)
                 {
                     // Type
-                    ClipboardItem.TypeEnum type = (ClipboardItem.TypeEnum)streamReader.Read();
+                    ClipboardItem.TypeEnum type = (ClipboardItem.TypeEnum)stringReader.Read();
 
                     // KeyDiff
-                    ushort keyDiff = ushort.Parse(streamReader.ReadLine());
+                    ushort keyDiff = ushort.Parse(stringReader.ReadLine());
 
                     // remaining operations depend on the type of item
                     switch (type)
                     {
                         case ClipboardItem.TypeEnum.Text:
-                            _ = new TextItem(this.mainWindow, keyDiff, streamReader);
+                            _ = new TextItem(this.mainWindow, keyDiff, stringReader);
                             break;
 
                         case ClipboardItem.TypeEnum.FileDropList:
-                            _ = new FileItem(this.mainWindow, keyDiff, streamReader);
+                            _ = new FileItem(this.mainWindow, keyDiff, stringReader);
                             break;
 
                         case ClipboardItem.TypeEnum.Image:
-                            _ = new ImageItem(this.mainWindow, keyDiff, streamReader);
+                            _ = new ImageItem(this.mainWindow, keyDiff, stringReader);
                             break;
 
                         case ClipboardItem.TypeEnum.Audio:
-                            _ = new AudioItem(this.mainWindow, keyDiff, streamReader);
+                            _ = new AudioItem(this.mainWindow, keyDiff, stringReader);
                             break;
 
                         case ClipboardItem.TypeEnum.Custom:
-                            _ = new CustomItem(this.mainWindow, keyDiff, streamReader);
+                            _ = new CustomItem(this.mainWindow, keyDiff, stringReader);
                             break;
                     }
                 }
             }
 
-            // all items have been read from the file and added; replace CLIPBOARD file with the temp file
-            File.Delete(this.ClipboardFile);
-            File.Move(this.TempFile, this.ClipboardFile);
+            //// store CLIPBOARD file contents into backup file, then replace with temp file
+            ////File.Delete(this.ClipboardFile);
+            ////File.Move(this.TempFile, this.ClipboardFile);
+            //File.Replace(this.TempFile, this.ClipboardFile, this.BackupFile);
         }
     }
 }

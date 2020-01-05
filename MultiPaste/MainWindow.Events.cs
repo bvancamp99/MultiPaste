@@ -92,14 +92,6 @@ namespace MultiPaste
             this.Clipboard.Remove();
         }
 
-        private void EditBtn_Click(object sender, EventArgs e)
-        {
-            // set focus back to the local clipboard
-            this.Clipboard.Focus();
-
-            this.MsgLabel.Normal("Currently in construction!");
-        }
-
         private void NotifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             // display MainWindow when system tray icon is double-clicked
