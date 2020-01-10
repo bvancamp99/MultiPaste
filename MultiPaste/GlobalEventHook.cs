@@ -5,6 +5,10 @@ using System.Windows.Forms;
 
 namespace MultiPaste
 {
+    /// <summary>
+    /// This class implements a global event hook that overrides WndProc to
+    /// detect a keyboard hotkey and changes to the Windows clipboard.
+    /// </summary>
     class GlobalEventHook : NativeWindow
     {
         private const int DISP_ID = 1; // stores ID of the keyboard hotkey to toggle displaying mainWindow (Ctrl + Alt + V)
@@ -17,24 +21,24 @@ namespace MultiPaste
             this.mainWindow = mainWindow;
             this.mainWindow.HandleCreated += (sender, e) =>
             {
-                AssignHandle(mainWindow.Handle);
+                base.AssignHandle(mainWindow.Handle);
             };
             this.mainWindow.HandleDestroyed += (sender, e) =>
             {
-                ReleaseHandle();
+                base.ReleaseHandle();
             };
 
             // store next clipboard viewer after establishing this
-            clipboardViewerNext = SetClipboardViewer(this.mainWindow.Handle);
+            this.clipboardViewerNext = GlobalEventHook.SetClipboardViewer(this.mainWindow.Handle);
 
             // fsModifiers: ALT = 1, CTRL = 2; 1 + 2 = 3
-            RegisterHotKey(this.mainWindow.Handle, DISP_ID, 3, (int)Keys.V);
+            GlobalEventHook.RegisterHotKey(this.mainWindow.Handle, DISP_ID, 3, (int)Keys.V);
         }
 
         ~GlobalEventHook()
         {
-            ChangeClipboardChain(mainWindow.Handle, clipboardViewerNext);
-            UnregisterHotKey(mainWindow.Handle, DISP_ID);
+            GlobalEventHook.ChangeClipboardChain(mainWindow.Handle, clipboardViewerNext);
+            GlobalEventHook.UnregisterHotKey(mainWindow.Handle, DISP_ID);
         }
 
         protected override void WndProc(ref Message m)
@@ -63,16 +67,28 @@ namespace MultiPaste
                 //    break;
 
                 case WM_DRAWCLIPBOARD:
-                    if (mainWindow.Clipboard.HandleClipboard)
-                        mainWindow.Clipboard.OnClipboardChange();
+                    // handle clipboard change if bool is true
+                    if (LocalClipboard.HandleClipboard)
+                    {
+                        mainWindow.OnClipboardChange();
+                    }
+
+                    // send message to the next clipboard viewer
                     SendMessage(clipboardViewerNext, m.Msg, m.WParam, m.LParam);
+
                     break;
 
                 case WM_CHANGECBCHAIN:
+                    // handle a change in the clipboard chain
                     if (m.WParam == clipboardViewerNext)
+                    {
                         clipboardViewerNext = m.LParam;
+                    }
                     else
+                    {
                         SendMessage(clipboardViewerNext, m.Msg, m.WParam, m.LParam);
+                    }
+
                     break;
 
                 case WM_HOTKEY:
@@ -94,7 +110,7 @@ namespace MultiPaste
                                     if (!mainWindow.Visible)
                                     {
                                         mainWindow.Visible = true;
-                                        mainWindow.Clipboard.Focus();
+                                        LocalClipboard.Focus();
                                     }
                                 }
                                 break;
@@ -103,6 +119,7 @@ namespace MultiPaste
                                 break;
                         }
                     }
+
                     break;
             }
 

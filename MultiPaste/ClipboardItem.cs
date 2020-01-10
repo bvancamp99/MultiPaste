@@ -60,12 +60,10 @@ namespace MultiPaste
         protected bool SetKeyDiff()
         {
             // calculate KeyDiff so that we can differentiate the items with duplicate key text
-            StringCollection myKeys = mainWindow.Clipboard.Keys;
-            Dictionary<string, ClipboardItem> myDict = mainWindow.Clipboard.Dict;
-            for (string key = this.KeyText; myDict.ContainsKey(key); key = this.KeyText + this.KeyDiff)
+            for (string key = this.KeyText; LocalClipboard.Dict.ContainsKey(key); key = this.KeyText + this.KeyDiff)
             {
                 // store item with the same key
-                ClipboardItem duplicateKeyItem = myDict[key];
+                ClipboardItem duplicateKeyItem = LocalClipboard.Dict[key];
 
                 // if keys are equivalent but the items are not, increment KeyDiff and continue loop
                 if (!this.IsEquivalent(duplicateKeyItem))
@@ -75,11 +73,11 @@ namespace MultiPaste
                 }
 
                 // if old item is at the target index, then there is no need to add this item
-                if (myKeys.IndexOf(key) == 0)
+                if (LocalClipboard.Keys.IndexOf(key) == 0)
                     return false;
 
                 // if this point is reached, remove the old item and break from the loop
-                this.mainWindow.Clipboard.Remove(duplicateKeyItem.KeyText, duplicateKeyItem);
+                LocalClipboard.Remove(duplicateKeyItem.KeyText, duplicateKeyItem);
                 break;
             }
 
@@ -92,7 +90,7 @@ namespace MultiPaste
         /// This method determines if the param is functionally equivalent to
         /// the current ClipboardItem instance.
         /// </summary>
-        /// <param name="duplicateKeyItem">ClipboardItem with the same key as this instance</param>
+        /// <param name="duplicateKeyItem">ClipboardItem with the same key as this instance</param>LocalClipboard.AddWithFile
         /// <returns>whether or not the ClipboardItems are equivalent</returns>
         protected abstract bool IsEquivalent(ClipboardItem duplicateKeyItem);
     }
@@ -109,20 +107,26 @@ namespace MultiPaste
             this.Text = text;
 
             // set beginning part of KeyText
-            this.KeyText = "Text: ";
+            base.KeyText = "Text: ";
 
             // append to KeyText given Text
-            if (this.Text.Length > LocalClipboard.CHAR_LIMIT - this.KeyText.Length)
-                this.KeyText += Text.Substring(0, LocalClipboard.CHAR_LIMIT - this.KeyText.Length) + "...";
+            if (this.Text.Length > LocalClipboard.CHAR_LIMIT - base.KeyText.Length)
+            {
+                base.KeyText += Text.Substring(0, LocalClipboard.CHAR_LIMIT - base.KeyText.Length) + "...";
+            }
             else
-                this.KeyText += Text;
+            {
+                base.KeyText += Text;
+            }
 
             // if setting KeyDiff returns false, then there is an equivalent item at index 0
-            if (!this.SetKeyDiff()) return;
+            if (!base.SetKeyDiff()) return;
 
             // add KeyDiff to KeyText if needed
-            if (this.KeyDiff != 0) 
-                this.KeyText += this.KeyDiff;
+            if (base.KeyDiff != 0)
+            {
+                base.KeyText += base.KeyDiff;
+            }
 
             /// Char order:
             /// 
@@ -131,44 +135,48 @@ namespace MultiPaste
             /// 3. Text.Length
             /// 4. Text
             /// 
-            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine +
-                this.Text.Length.ToString() + Environment.NewLine + this.Text;
+            string keyDiffStr = base.KeyDiff.ToString();
+            string textLenStr = this.Text.Length.ToString();
+            base.FileChars = (char)base.Type + keyDiffStr + Environment.NewLine +
+                textLenStr + Environment.NewLine + this.Text;
 
             // add to local clipboard with CLIPBOARD file
-            this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
+            LocalClipboard.AddWithFile(base.KeyText, this);
 
             // move selected index to that of this instance if box is checked
-            if (this.mainWindow.MoveToCopied.Checked)
-                this.mainWindow.ListBox.SelectedIndex = this.mainWindow.Clipboard.Keys.IndexOf(this.KeyText);
+            if (base.mainWindow.MoveToCopied.Checked)
+            {
+                base.mainWindow.ListBox.SelectedIndex = LocalClipboard.Keys.IndexOf(base.KeyText);
+            }
 
-            this.mainWindow.MsgLabel.Normal("Text item added!");
+            MsgLabel.Normal("Text item added!");
         }
 
-        public TextItem(MainWindow mainWindow, ushort keyDiff, StringReader stringReader)
+        public TextItem(MainWindow mainWindow, ushort keyDiff, StringReader strRead)
             : base(mainWindow, TypeEnum.Text, keyDiff)
         {
             // retrieve number of chars in Text
-            int textSize = int.Parse(stringReader.ReadLine());
+            int textSize = int.Parse(strRead.ReadLine());
 
             // read textSize num chars from the file to a char array
             char[] textArr = new char[textSize];
-            stringReader.Read(textArr, 0, textSize);
+            strRead.Read(textArr, 0, textSize);
 
             // store char array as Text
             this.Text = new string(textArr);
 
             // set beginning part of KeyText
-            this.KeyText = "Text: ";
+            base.KeyText = "Text: ";
 
             // append to KeyText given Text
-            if (this.Text.Length > LocalClipboard.CHAR_LIMIT - this.KeyText.Length)
-                this.KeyText += this.Text.Substring(0, LocalClipboard.CHAR_LIMIT - this.KeyText.Length) + "...";
+            if (this.Text.Length > LocalClipboard.CHAR_LIMIT - base.KeyText.Length)
+                base.KeyText += this.Text.Substring(0, LocalClipboard.CHAR_LIMIT - base.KeyText.Length) + "...";
             else
-                this.KeyText += this.Text;
+                base.KeyText += this.Text;
 
             // add KeyDiff to KeyText if needed
-            if (this.KeyDiff != 0) 
-                this.KeyText += this.KeyDiff;
+            if (base.KeyDiff != 0) 
+                base.KeyText += base.KeyDiff;
 
             /// Char order:
             /// 
@@ -177,12 +185,13 @@ namespace MultiPaste
             /// 3. Text.Length
             /// 4. Text
             /// 
-
-            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine +
-                this.Text.Length.ToString() + Environment.NewLine + this.Text;
+            string keyDiffStr = base.KeyDiff.ToString();
+            string textLenStr = this.Text.Length.ToString();
+            base.FileChars = (char)base.Type + keyDiffStr + Environment.NewLine +
+                textLenStr + Environment.NewLine + this.Text;
 
             // add to local clipboard
-            this.mainWindow.Clipboard.Add(this.KeyText, this);
+            LocalClipboard.Add(base.KeyText, this);
         }
 
         /// <summary>
@@ -218,21 +227,21 @@ namespace MultiPaste
 
             // if 1 file was copied, KeyText will store FileDropList[0]'s filename
             if (this.FileDropList.Count == 1)
-                this.KeyText = "File: " + Path.GetFileName(this.FileDropList[0]);
+                base.KeyText = "File: " + Path.GetFileName(this.FileDropList[0]);
             // else KeyText will store FileDropList[0]'s filename + how many more files there are
             else
-                this.KeyText = "Files: " + Path.GetFileName(this.FileDropList[0]) + " + " + (this.FileDropList.Count - 1) + " more";
+                base.KeyText = "Files: " + Path.GetFileName(this.FileDropList[0]) + " + " + (this.FileDropList.Count - 1) + " more";
 
             // shorten KeyText to fit the character limit if needed
-            if (this.KeyText.Length > LocalClipboard.CHAR_LIMIT)
-                this.KeyText = this.KeyText.Substring(0, LocalClipboard.CHAR_LIMIT) + "...";
+            if (base.KeyText.Length > LocalClipboard.CHAR_LIMIT)
+                base.KeyText = base.KeyText.Substring(0, LocalClipboard.CHAR_LIMIT) + "...";
 
             // if setting KeyDiff returns false, then there is an equivalent item at index 0
-            if (!this.SetKeyDiff()) return;
+            if (!base.SetKeyDiff()) return;
 
             // add KeyDiff to KeyText if needed
-            if (this.KeyDiff != 0) 
-                this.KeyText += this.KeyDiff;
+            if (base.KeyDiff != 0) 
+                base.KeyText += base.KeyDiff;
 
             /// Char order:
             /// 
@@ -242,47 +251,51 @@ namespace MultiPaste
             /// 4. FileDropList
             /// 
 
-            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine +
+            base.FileChars = (char)base.Type + base.KeyDiff.ToString() + Environment.NewLine +
                 this.FileDropList.Count.ToString() + Environment.NewLine;
 
             foreach (string fileDir in this.FileDropList)
-                this.FileChars += fileDir + Environment.NewLine;
+            {
+                base.FileChars += fileDir + Environment.NewLine;
+            }
 
             // add to local clipboard with CLIPBOARD file
-            this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
+            LocalClipboard.AddWithFile(base.KeyText, this);
 
             // move selected index to that of this instance if box is checked
-            if (this.mainWindow.MoveToCopied.Checked)
-                this.mainWindow.ListBox.SelectedIndex = this.mainWindow.Clipboard.Keys.IndexOf(this.KeyText);
+            if (base.mainWindow.MoveToCopied.Checked)
+            {
+                base.mainWindow.ListBox.SelectedIndex = LocalClipboard.Keys.IndexOf(base.KeyText);
+            }
 
-            this.mainWindow.MsgLabel.Normal("File item added!");
+            MsgLabel.Normal("File item added!");
         }
 
-        public FileItem(MainWindow mainWindow, ushort keyDiff, StringReader stringReader)
+        public FileItem(MainWindow mainWindow, ushort keyDiff, StringReader strRead)
             : base(mainWindow, TypeEnum.FileDropList, keyDiff)
         {
             // retrieve number of strings in FileDropList
-            int listCount = int.Parse(stringReader.ReadLine());
+            int listCount = int.Parse(strRead.ReadLine());
 
             // read each string into FileDropList
             this.FileDropList = new StringCollection();
             for (int i = 0; i < listCount; i++)
-                this.FileDropList.Add(stringReader.ReadLine());
+                this.FileDropList.Add(strRead.ReadLine());
 
             // if 1 file was copied, KeyText will store FileDropList[0]'s filename
             if (this.FileDropList.Count == 1)
-                this.KeyText = "File: " + Path.GetFileName(this.FileDropList[0]);
+                base.KeyText = "File: " + Path.GetFileName(this.FileDropList[0]);
             // else KeyText will store FileDropList[0]'s filename + how many more files there are
             else
-                this.KeyText = "Files: " + Path.GetFileName(this.FileDropList[0]) + " + " + (this.FileDropList.Count - 1) + " more";
+                base.KeyText = "Files: " + Path.GetFileName(this.FileDropList[0]) + " + " + (this.FileDropList.Count - 1) + " more";
 
             // shorten KeyText to fit the character limit if needed
-            if (this.KeyText.Length > LocalClipboard.CHAR_LIMIT)
-                this.KeyText = this.KeyText.Substring(0, LocalClipboard.CHAR_LIMIT) + "...";
+            if (base.KeyText.Length > LocalClipboard.CHAR_LIMIT)
+                base.KeyText = base.KeyText.Substring(0, LocalClipboard.CHAR_LIMIT) + "...";
 
             // add KeyDiff to KeyText if needed
-            if (this.KeyDiff != 0) 
-                this.KeyText += this.KeyDiff;
+            if (base.KeyDiff != 0) 
+                base.KeyText += base.KeyDiff;
 
             /// Char order:
             /// 
@@ -292,14 +305,16 @@ namespace MultiPaste
             /// 4. FileDropList
             /// 
 
-            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine +
+            base.FileChars = (char)base.Type + base.KeyDiff.ToString() + Environment.NewLine +
                 this.FileDropList.Count.ToString() + Environment.NewLine;
 
             foreach (string fileDir in this.FileDropList)
-                this.FileChars += fileDir + Environment.NewLine;
+            {
+                base.FileChars += fileDir + Environment.NewLine;
+            }
 
             // add to local clipboard
-            this.mainWindow.Clipboard.Add(this.KeyText, this);
+            LocalClipboard.Add(base.KeyText, this);
         }
 
         /// <summary>
@@ -350,21 +365,23 @@ namespace MultiPaste
                 this.Size = image.Size;
 
                 // set KeyText using image dimensions
-                this.KeyText = "Image (" + this.Size.Width + " x " + this.Size.Height + ")";
+                base.KeyText = "Image (" + this.Size.Width + " x " + this.Size.Height + ")";
 
                 // if setting KeyDiff returns false, then there is an equivalent item at index 0
-                if (!this.SetKeyDiff()) return;
+                if (!base.SetKeyDiff()) return;
 
                 // add KeyDiff to KeyText if needed
-                if (this.KeyDiff != 0) 
-                    this.KeyText += this.KeyDiff;
+                if (base.KeyDiff != 0) 
+                    base.KeyText += base.KeyDiff;
 
                 // create Images folder if it's missing
-                string imageFolder = this.mainWindow.Clipboard.ImageFolder;
-                Directory.CreateDirectory(imageFolder);
+                if (!LocalClipboard.ImageFolder.Exists)
+                {
+                    LocalClipboard.ImageFolder.Create();
+                }
 
                 // create image file in the Images folder
-                image.Save(Path.Combine(imageFolder, this.KeyText));
+                image.Save(Path.Combine(LocalClipboard.ImageFolder.FullName, base.KeyText));
             }
 
             /// Char order:
@@ -375,38 +392,40 @@ namespace MultiPaste
             /// 4. Size.Height
             /// 
 
-            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine +
+            base.FileChars = (char)base.Type + base.KeyDiff.ToString() + Environment.NewLine +
                 this.Size.Width.ToString() + Environment.NewLine + this.Size.Height.ToString() + 
                 Environment.NewLine;
 
             // add to local clipboard with CLIPBOARD file
-            this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
+            LocalClipboard.AddWithFile(base.KeyText, this);
 
             // move selected index to that of this instance if box is checked
-            if (this.mainWindow.MoveToCopied.Checked)
-                this.mainWindow.ListBox.SelectedIndex = this.mainWindow.Clipboard.Keys.IndexOf(this.KeyText);
+            if (base.mainWindow.MoveToCopied.Checked)
+            {
+                base.mainWindow.ListBox.SelectedIndex = LocalClipboard.Keys.IndexOf(base.KeyText);
+            }
 
-            this.mainWindow.MsgLabel.Normal("Image item added!");
+            MsgLabel.Normal("Image item added!");
         }
 
-        public ImageItem(MainWindow mainWindow, ushort keyDiff, StringReader stringReader)
+        public ImageItem(MainWindow mainWindow, ushort keyDiff, StringReader strRead)
             : base(mainWindow, TypeEnum.Image, keyDiff)
         {
             // retrieve width int
-            int width = int.Parse(stringReader.ReadLine());
+            int width = int.Parse(strRead.ReadLine());
 
             // retrieve height int
-            int height = int.Parse(stringReader.ReadLine());
+            int height = int.Parse(strRead.ReadLine());
 
             // init Size with width and height args
             this.Size = new Size(width, height);
 
             // set KeyText using image dimensions
-            this.KeyText = "Image (" + this.Size.Width + " x " + this.Size.Height + ")";
+            base.KeyText = "Image (" + this.Size.Width + " x " + this.Size.Height + ")";
 
             // add KeyDiff to KeyText if needed
-            if (this.KeyDiff != 0) 
-                this.KeyText += this.KeyDiff;
+            if (base.KeyDiff != 0) 
+                base.KeyText += base.KeyDiff;
 
             /// Char order:
             /// 
@@ -416,21 +435,20 @@ namespace MultiPaste
             /// 4. Size.Height
             /// 
 
-            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine + 
+            base.FileChars = (char)base.Type + base.KeyDiff.ToString() + Environment.NewLine + 
                 this.Size.Width.ToString() + Environment.NewLine + this.Size.Height.ToString() + 
                 Environment.NewLine;
 
             // if image file is missing, remove item data from the CLIPBOARD file and return
-            string imageFolder = this.mainWindow.Clipboard.ImageFolder;
-            if (!File.Exists(Path.Combine(imageFolder, this.KeyText)))
+            FileInfo imageFile = new FileInfo(Path.Combine(LocalClipboard.ImageFolder.FullName, base.KeyText));
+            if (!imageFile.Exists)
             {
-                string clipboardFile = this.mainWindow.Clipboard.ClipboardFile;
-                File.WriteAllText(clipboardFile, File.ReadAllText(clipboardFile).Replace(this.FileChars, ""));
+                LocalClipboard.RemoveFromFile(base.FileChars);
                 return;
             }
 
             // add to local clipboard
-            this.mainWindow.Clipboard.Add(this.KeyText, this);
+            LocalClipboard.Add(base.KeyText, this);
         }
 
         /// <summary>
@@ -493,24 +511,27 @@ namespace MultiPaste
                 fileLengthSeconds %= 60;
 
                 // calculate KeyText given the data
-                this.KeyText = "Audio (" + (fileLengthHours == 0 ? "" : fileLengthHours + "h:") + (fileLengthMinutes
+                base.KeyText = "Audio (" + (fileLengthHours == 0 ? "" : fileLengthHours + "h:") + (fileLengthMinutes
                     == 0 ? "" : fileLengthMinutes + "m:") + fileLengthSeconds + "s)";
 
                 // if setting KeyDiff returns false, then there is an equivalent item at index 0
-                if (!this.SetKeyDiff()) return;
+                if (!base.SetKeyDiff()) return;
 
                 // add KeyDiff to KeyText if needed
-                if (this.KeyDiff != 0) 
-                    this.KeyText += this.KeyDiff;
+                if (base.KeyDiff != 0) 
+                    base.KeyText += base.KeyDiff;
 
                 // create Audio folder if it's missing
-                string audioFolder = this.mainWindow.Clipboard.AudioFolder;
-                Directory.CreateDirectory(audioFolder);
+                if (!LocalClipboard.AudioFolder.Exists)
+                {
+                    LocalClipboard.AudioFolder.Create();
+                }
 
                 // create audio file in the Audio folder
-                using (var fileStream = File.Create(Path.Combine(audioFolder, this.KeyText)))
+                FileInfo audioFile = new FileInfo(Path.Combine(LocalClipboard.AudioFolder.FullName, base.KeyText));
+                audioStream.Seek(0, SeekOrigin.Begin);
+                using (FileStream fileStream = audioFile.Create())
                 {
-                    audioStream.Seek(0, SeekOrigin.Begin);
                     audioStream.CopyTo(fileStream);
                 }
             }
@@ -523,25 +544,27 @@ namespace MultiPaste
             /// 4. KeyText
             /// 
 
-            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine + 
-                this.ByteLength.ToString() + Environment.NewLine + this.KeyText + Environment.NewLine;
+            base.FileChars = (char)base.Type + base.KeyDiff.ToString() + Environment.NewLine + 
+                this.ByteLength.ToString() + Environment.NewLine + base.KeyText + Environment.NewLine;
 
             // add to local clipboard with CLIPBOARD file
-            this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
+            LocalClipboard.AddWithFile(base.KeyText, this);
 
             // move selected index to that of this instance if box is checked
-            if (this.mainWindow.MoveToCopied.Checked)
-                this.mainWindow.ListBox.SelectedIndex = this.mainWindow.Clipboard.Keys.IndexOf(this.KeyText);
+            if (base.mainWindow.MoveToCopied.Checked)
+            {
+                base.mainWindow.ListBox.SelectedIndex = LocalClipboard.Keys.IndexOf(base.KeyText);
+            }
 
-            this.mainWindow.MsgLabel.Normal("Audio item added!");
+            MsgLabel.Normal("Audio item added!");
         }
 
-        public AudioItem(MainWindow mainWindow, ushort keyDiff, StringReader stringReader)
+        public AudioItem(MainWindow mainWindow, ushort keyDiff, StringReader strRead)
             : base(mainWindow, TypeEnum.Audio, keyDiff)
         {
             // retrieving ByteLength and KeyText from the stream
-            this.ByteLength = long.Parse(stringReader.ReadLine());
-            this.KeyText = stringReader.ReadLine();
+            this.ByteLength = long.Parse(strRead.ReadLine());
+            base.KeyText = strRead.ReadLine();
 
             /// Char order:
             /// 
@@ -551,20 +574,19 @@ namespace MultiPaste
             /// 4. KeyText
             /// 
 
-            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine + 
-                this.ByteLength.ToString() + Environment.NewLine + this.KeyText + Environment.NewLine;
+            base.FileChars = (char)base.Type + base.KeyDiff.ToString() + Environment.NewLine + 
+                this.ByteLength.ToString() + Environment.NewLine + base.KeyText + Environment.NewLine;
 
             // if audio file is missing, remove item data from the CLIPBOARD file and return
-            string audioFolder = this.mainWindow.Clipboard.AudioFolder;
-            if (!File.Exists(Path.Combine(audioFolder, this.KeyText)))
+            FileInfo audioFile = new FileInfo(Path.Combine(LocalClipboard.AudioFolder.FullName, base.KeyText));
+            if (!audioFile.Exists)
             {
-                string clipboardFile = this.mainWindow.Clipboard.ClipboardFile;
-                File.WriteAllText(clipboardFile, File.ReadAllText(clipboardFile).Replace(this.FileChars, ""));
+                LocalClipboard.RemoveFromFile(base.FileChars);
                 return;
             }
 
             // add to local clipboard
-            this.mainWindow.Clipboard.Add(this.KeyText, this);
+            LocalClipboard.Add(base.KeyText, this);
         }
 
         /// <summary>
@@ -618,23 +640,28 @@ namespace MultiPaste
             if (this.WritableFormat == null) return;
 
             // set KeyText using WritableFormat
-            this.KeyText = "Custom (" + this.WritableFormat + ")";
+            base.KeyText = "Custom (" + this.WritableFormat + ")";
 
             // if setting KeyDiff returns false, then there is an equivalent item at index 0
-            if (!this.SetKeyDiff()) return;
+            if (!base.SetKeyDiff()) return;
 
             // add KeyDiff to KeyText if needed
-            if (this.KeyDiff != 0) 
-                this.KeyText += this.KeyDiff;
+            if (base.KeyDiff != 0) 
+                base.KeyText += base.KeyDiff;
 
-            // create folder if it's missing
-            string customFolder = this.mainWindow.Clipboard.CustomFolder;
-            Directory.CreateDirectory(customFolder);
+            // create Custom folder if it's missing
+            if (!LocalClipboard.CustomFolder.Exists)
+            {
+                LocalClipboard.CustomFolder.Create();
+            }
 
             // create file in Custom folder with dataObject
-            using (var fileStream = File.Create(Path.Combine(customFolder, this.KeyText)))
+            FileInfo customFile = new FileInfo(Path.Combine(LocalClipboard.CustomFolder.FullName, base.KeyText));
+            object data = dataObject.GetData(this.WritableFormat);
+            BinaryFormatter formatter = new BinaryFormatter();
+            using (FileStream fileStream = customFile.Create())
             {
-                new BinaryFormatter().Serialize(fileStream, dataObject.GetData(this.WritableFormat));
+                formatter.Serialize(fileStream, data);
             }
 
             /// Char order:
@@ -644,31 +671,33 @@ namespace MultiPaste
             /// 3. WritableFormat
             /// 
 
-            this.FileChars = (char)this.Type + this.KeyDiff.ToString() + Environment.NewLine + 
+            base.FileChars = (char)base.Type + base.KeyDiff.ToString() + Environment.NewLine + 
                 this.WritableFormat + Environment.NewLine;
 
             // add to local clipboard with CLIPBOARD file
-            this.mainWindow.Clipboard.AddWithFile(this.KeyText, this);
+            LocalClipboard.AddWithFile(base.KeyText, this);
 
             // move selected index to that of this instance if box is checked
-            if (this.mainWindow.MoveToCopied.Checked)
-                this.mainWindow.ListBox.SelectedIndex = this.mainWindow.Clipboard.Keys.IndexOf(this.KeyText);
+            if (base.mainWindow.MoveToCopied.Checked)
+            {
+                base.mainWindow.ListBox.SelectedIndex = LocalClipboard.Keys.IndexOf(base.KeyText);
+            }
 
-            this.mainWindow.MsgLabel.Normal("Custom item added!");
+            MsgLabel.Normal("Custom item added!");
         }
 
-        public CustomItem(MainWindow mainWindow, ushort keyDiff, StringReader stringReader)
+        public CustomItem(MainWindow mainWindow, ushort keyDiff, StringReader strRead)
             : base(mainWindow, TypeEnum.Custom, keyDiff)
         {
             // retrieving WritableFormat from the stream
-            this.WritableFormat = stringReader.ReadLine();
+            this.WritableFormat = strRead.ReadLine();
 
             // set KeyText using WritableFormat
-            this.KeyText = "Custom (" + this.WritableFormat + ")";
+            base.KeyText = "Custom (" + this.WritableFormat + ")";
 
             // add KeyDiff to KeyText if needed
-            if (this.KeyDiff != 0) 
-                this.KeyText += this.KeyDiff;
+            if (base.KeyDiff != 0) 
+                base.KeyText += base.KeyDiff;
 
             /// Char order:
             /// 
@@ -677,19 +706,18 @@ namespace MultiPaste
             /// 3. WritableFormat
             /// 
 
-            FileChars = (char)Type + KeyDiff.ToString() + Environment.NewLine + WritableFormat + Environment.NewLine;
+            base.FileChars = (char)base.Type + base.KeyDiff.ToString() + Environment.NewLine + this.WritableFormat + Environment.NewLine;
 
             // if custom file is missing, remove item data from the CLIPBOARD file and return
-            string customFolder = this.mainWindow.Clipboard.CustomFolder;
-            if (!File.Exists(Path.Combine(customFolder, this.KeyText)))
+            FileInfo customFile = new FileInfo(Path.Combine(LocalClipboard.CustomFolder.FullName, base.KeyText));
+            if (!customFile.Exists)
             {
-                string clipboardFile = this.mainWindow.Clipboard.ClipboardFile;
-                File.WriteAllText(clipboardFile, File.ReadAllText(clipboardFile).Replace(this.FileChars, ""));
+                LocalClipboard.RemoveFromFile(base.FileChars);
                 return;
             }
 
             // add to local clipboard
-            mainWindow.Clipboard.Add(this.KeyText, this);
+            LocalClipboard.Add(base.KeyText, this);
         }
 
         /// <summary>

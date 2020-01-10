@@ -1,5 +1,5 @@
 ﻿<h1> MultiPaste </h1>
- <ul>
+<ul>
   <li>A free, enhanced clipboard manager for Windows</li>
   <li>Supports text, files, raw images, audio, and even custom formats!</li>
   <li>Remembers what you copied even after closing and reopening MultiPaste</li>
@@ -14,8 +14,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Working on </h3>
 <ul>
-  <li>Use instances of FileInfo/DirectoryInfo instead of strings for files/folders.  Those classes include a lot of cool stuff and would be useful to have on-hand!</li>
-  <li>Option to edit items.  This feature could be offered via separate menu items in the Other Options dropdown, e.g. "Edit text item" or "Edit file item."  Although it might be better just to have one menu item and/or one button for editing, and the window that pops up is dynamically determined based on the type of ClipboardItem.  This would mean we need to make separate forms for each ClipboardItem type, so at most 5 (could be less if we can conflate, say, forms for the items that use a file system).</li>
+  <li>We could remove the window frame and implement our own custom "frame", with X button et al.  This would be a great way to circumvent the problem of setting the frame's color, and also we can have a more custom look to the top.</li>
 </ul>
 
 <h3> Fix </h3>
@@ -25,11 +24,11 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Improve </h3>
 <ul>
-  <li>Okay, so I know that we just reverted back to non-static classes.  But man it would really make a lot of sense for GlobalEventHook, LocalClipboard, Config, and MsgLabel to be static.  This is because we only ever make one instance of each, and their contents are accessed in a variety of classes.</li>
+  <li>Lots of redundant code in ClipboardItem's children classes; conflate if possible and/or make abstract methods</li>
+  <li>Make abstract parent class for ImageItem, AudioItem, and CustomItem.  It would contain a "MyFile" FileInfo property, as well as some operations in the constructor.</li>
   <li>Work on overall color theme implementation, including: changing the border color of a listbox (no native support); Argb implementation; more color theme options.</li>
   <li>Maybe "enter" keypress should give options to edit the item rather than copy it.  It would provide a popup with a textbox.  This edit option should also be available in the context menu (would open popup as normal).</li>
-  <li>Review and maybe improve upon the implementation of OnKeyUp and OnKeyDown.  They're kind of a mess again.</li>
-  <li>Maybe move the OnKeyUp and OnKeyDown methods to MainWindow.Events.cs</li>
+  <li>Clean up the implementation of OnKeyUp and OnKeyDown.  They're kind of a mess again.</li>
   <li>Could potentially conflate IsEquivalent on ImageItem, AudioItem, and CustomItem.  Would need to create file before comparing the ClipboardItems (if possible).  Then we would compare byte length of the files first, then maybe do more checking if that bool returns true (although byte-by-byte checking could become VERY slow).</li>
   <li>Not sure if this would be possible, but making MainWindow static would make a lot of sense.  Then we don't have to pass copies of its instance around to every class.  Issue is then it can't inherit from the Form class (which isn't static).</li>
   <li>Would like to improve ClipboardItem.SetKeyDiff.  It does a lot of things that don't make sense without significant context.  Would also like to move it to LocalClipboard.cs</li>
@@ -42,6 +41,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Add </h3>
 <ul>
+  <li>Option to edit items.  This feature could be offered via separate menu items in the Other Options dropdown, e.g. "Edit text item" or "Edit file item."  Although it might be better just to have one menu item and/or one button for editing, and the window that pops up is dynamically determined based on the type of ClipboardItem.  This would mean we need to make separate forms for each ClipboardItem type, so at most 5 (could be less if we can conflate, say, forms for the items that use a file system).</li>
   <li>Add options to open items from file.  This would be 1) a good feature and 2) finally a way to test AudioItem!  Only allow text files for text items, any file for file items, image files for image items, and audio files for audio items</li>
   <li>Maybe make MultiPaste slightly translucent?  Like ~90% opacity?</li>
   <li>Would like to make MultiPaste resizable</li>

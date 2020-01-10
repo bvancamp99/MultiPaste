@@ -11,80 +11,71 @@ using System.Windows.Forms;
 
 namespace MultiPaste
 {
-    class Config
+    /// <summary>
+    /// This static class implements the handling of user config information.
+    /// </summary>
+    static class Config
     {
         private const int CONFIG_SIZE = 5; // num bytes that a valid CONFIG file would be; depends on number of config settings
 
-        private readonly MainWindow mainWindow; // store MainWindow instance to access its variables
+        private static readonly FileInfo configFile; // config file directory and other info
 
-        public Config(MainWindow mainWindow)
+        static Config()
         {
-            this.mainWindow = mainWindow;
-
-            this.ConfigFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CONFIG.mp");
+            Config.configFile = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CONFIG.mp"));
         }
 
         /// <summary>
-        /// config file directory
+        /// store MainWindow to access its variables
         /// </summary>
-        public string ConfigFile { get; }
+        public static MainWindow MainWindow { private get; set; }
 
-        public void WinStartupRegistry()
+        public static void WinStartupRegistry()
         {
             // establish the registry key for Windows startup; bool set to true to allow write access
-            RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
             // add to or delete from Windows startup processes depending on bool
-            if (this.mainWindow.WinStartup.Checked)
-                registryKey.SetValue("MultiPaste", System.Reflection.Assembly.GetEntryAssembly().Location);
+            if (Config.MainWindow.WinStartup.Checked)
+            {
+                rk.SetValue("MultiPaste", System.Reflection.Assembly.GetEntryAssembly().Location);
+            }
             else
-                registryKey.DeleteValue("MultiPaste", false);
+            {
+                rk.DeleteValue("MultiPaste", false);
+            }
         }
 
-        public void FromFile()
+        public static void FromFile()
         {
             // read from config file to get user config information
-            FileStream fileStream = new FileStream(this.ConfigFile, FileMode.OpenOrCreate);
-            using (fileStream)
+            using (FileStream fs = Config.configFile.Open(FileMode.OpenOrCreate))
             {
                 // check for valid CONFIG file size
-                if (fileStream.Length == Config.CONFIG_SIZE)
+                if (fs.Length == Config.CONFIG_SIZE)
                 {
                     // read bytes and assign to the appropriate properties
-                    this.mainWindow.WinStartup.Checked = Convert.ToBoolean(fileStream.ReadByte());
-                    this.mainWindow.WrapKeys.Checked = Convert.ToBoolean(fileStream.ReadByte());
-                    this.mainWindow.MoveToCopied.Checked = Convert.ToBoolean(fileStream.ReadByte());
-                    this.mainWindow.ChangeTopBottom.Checked = Convert.ToBoolean(fileStream.ReadByte());
+                    Config.MainWindow.WinStartup.Checked = Convert.ToBoolean(fs.ReadByte());
+                    Config.MainWindow.WrapKeys.Checked = Convert.ToBoolean(fs.ReadByte());
+                    Config.MainWindow.MoveToCopied.Checked = Convert.ToBoolean(fs.ReadByte());
+                    Config.MainWindow.ChangeTopBottom.Checked = Convert.ToBoolean(fs.ReadByte());
 
                     // read ColorTheme from file
-                    this.mainWindow.ColorThemeBox.SelectedIndex = fileStream.ReadByte();
+                    Config.MainWindow.ColorThemeBox.SelectedIndex = fs.ReadByte();
                 }
                 // else CONFIG file is invalid
                 else
                 {
                     // load default config
-                    this.LoadDefaults(fileStream);
+                    Config.LoadDefaults(fs);
                 }
             }
 
             // update registry for WinStartup
-            this.WinStartupRegistry();
+            Config.WinStartupRegistry();
 
             // update ColorTheme of MultiPaste
-            this.ChangeTheme();
-        }
-
-        public void UpdateFile()
-        {
-            // init FileStream to write to file
-            FileStream fileStream = new FileStream(this.ConfigFile, FileMode.Create);
-
-            // before writing, clear config or create new empty file if it was unexpectedly deleted
-            using (fileStream)
-            {
-                // call helper with fileStream as arg
-                this.UpdateFile(fileStream);
-            }
+            Config.ChangeTheme();
         }
 
         /// <summary>
@@ -93,29 +84,26 @@ namespace MultiPaste
         /// This method is used if the caller already has a FileStream 
         /// instance to the CONFIG file.
         /// </summary>
-        /// <param name="fileStream">FileStream to the CONFIG file</param>
-        private void UpdateFile(FileStream fileStream)
+        /// <param name="fs">FileStream to the CONFIG file</param>
+        private static void UpdateFile(FileStream fs)
         {
             // write applicable bools to file
-            fileStream.WriteByte(Convert.ToByte(this.mainWindow.WinStartup.Checked));
-            fileStream.WriteByte(Convert.ToByte(this.mainWindow.WrapKeys.Checked));
-            fileStream.WriteByte(Convert.ToByte(this.mainWindow.MoveToCopied.Checked));
-            fileStream.WriteByte(Convert.ToByte(this.mainWindow.ChangeTopBottom.Checked));
+            fs.WriteByte(Convert.ToByte(Config.MainWindow.WinStartup.Checked));
+            fs.WriteByte(Convert.ToByte(Config.MainWindow.WrapKeys.Checked));
+            fs.WriteByte(Convert.ToByte(Config.MainWindow.MoveToCopied.Checked));
+            fs.WriteByte(Convert.ToByte(Config.MainWindow.ChangeTopBottom.Checked));
 
             // write selected ColorTheme to file
-            fileStream.WriteByte((byte)this.mainWindow.ColorThemeBox.SelectedIndex);
+            fs.WriteByte((byte)Config.MainWindow.ColorThemeBox.SelectedIndex);
         }
 
-        public void LoadDefaults()
+        public static void UpdateFile()
         {
-            // init FileStream to write to file
-            FileStream fileStream = new FileStream(this.ConfigFile, FileMode.Create);
-
             // before writing, clear config or create new empty file if it was unexpectedly deleted
-            using (fileStream)
+            using (FileStream fs = Config.configFile.Open(FileMode.Create))
             {
-                // call helper with fileStream as arg
-                this.LoadDefaults(fileStream);
+                // call helper with FileStream as arg
+                Config.UpdateFile(fs);
             }
         }
 
@@ -125,39 +113,33 @@ namespace MultiPaste
         /// This method is used if the caller already has a FileStream 
         /// instance to the CONFIG file.
         /// </summary>
-        /// <param name="fileStream">FileStream to the CONFIG file</param>
-        private void LoadDefaults(FileStream fileStream)
+        /// <param name="fs">FileStream to the CONFIG file</param>
+        private static void LoadDefaults(FileStream fs)
         {
             // set to default values
-            this.mainWindow.WinStartup.Checked = true;
-            this.mainWindow.WrapKeys.Checked = false;
-            this.mainWindow.MoveToCopied.Checked = true;
-            this.mainWindow.ChangeTopBottom.Checked = true;
-            this.mainWindow.ColorThemeBox.SelectedIndex = (int)MainWindow.ColorTheme.Light;
+            Config.MainWindow.WinStartup.Checked = true;
+            Config.MainWindow.WrapKeys.Checked = false;
+            Config.MainWindow.MoveToCopied.Checked = true;
+            Config.MainWindow.ChangeTopBottom.Checked = true;
+            Config.MainWindow.ColorThemeBox.SelectedIndex = (int)MainWindow.ColorTheme.Light;
 
             // update registry for WinStartup
-            this.WinStartupRegistry();
+            Config.WinStartupRegistry();
 
             // update ColorTheme of MultiPaste
-            this.ChangeTheme();
+            Config.ChangeTheme();
 
             // write default values to CONFIG file
-            this.UpdateFile(fileStream);
+            Config.UpdateFile(fs);
         }
 
-        public void ChangeTheme()
+        public static void LoadDefaults()
         {
-            // determine which argb collection should be used
-            MainWindow.ColorTheme colorTheme = (MainWindow.ColorTheme)this.mainWindow.ColorThemeBox.SelectedIndex;
-            switch (colorTheme)
+            // before writing, clear config or create new empty file if it was unexpectedly deleted
+            using (FileStream fs = Config.configFile.Open(FileMode.Create))
             {
-                case MainWindow.ColorTheme.Light:
-                    this.ChangeTheme(Themes.Light);
-                    break;
-
-                case MainWindow.ColorTheme.Dark:
-                    this.ChangeTheme(Themes.Dark);
-                    break;
+                // call helper with FileStream as arg
+                Config.LoadDefaults(fs);
             }
         }
 
@@ -168,13 +150,13 @@ namespace MultiPaste
         /// specified color theme to pass.
         /// </summary>
         /// <param name="myTheme">ArgbCollection that represents the selected color theme</param>
-        private void ChangeTheme(ArgbCollection myTheme)
+        private static void ChangeTheme(ArgbCollection myTheme)
         {
             // set main window's background color
-            this.mainWindow.BackColor = myTheme.Background.GetColor();
+            Config.MainWindow.BackColor = myTheme.Background.GetColor();
 
             // set color of each control based on type
-            foreach (Control control in this.mainWindow.Controls)
+            foreach (Control control in Config.MainWindow.Controls)
             {
                 if (control is MenuStrip)
                 {
@@ -197,6 +179,22 @@ namespace MultiPaste
 
                 // set font color
                 control.ForeColor = myTheme.Font.GetColor();
+            }
+        }
+
+        public static void ChangeTheme()
+        {
+            // determine which argb collection should be used
+            MainWindow.ColorTheme colorTheme = (MainWindow.ColorTheme)Config.MainWindow.ColorThemeBox.SelectedIndex;
+            switch (colorTheme)
+            {
+                case MultiPaste.MainWindow.ColorTheme.Light:
+                    Config.ChangeTheme(Themes.Light);
+                    break;
+
+                case MultiPaste.MainWindow.ColorTheme.Dark:
+                    Config.ChangeTheme(Themes.Dark);
+                    break;
             }
         }
     }

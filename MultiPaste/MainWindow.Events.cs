@@ -10,8 +10,41 @@ using System.Windows.Forms;
 
 namespace MultiPaste
 {
+    /// <summary>
+    /// This partial class of MainWindow acts as a handler for all events that
+    /// occur on the custom form.
+    /// </summary>
     partial class MainWindow : Form
     {
+        public void OnClipboardChange()
+        {
+            if (Clipboard.ContainsText())
+            {
+                string text = Clipboard.GetText();
+                _ = new TextItem(this, text);
+            }
+            else if (Clipboard.ContainsFileDropList())
+            {
+                StringCollection files = Clipboard.GetFileDropList();
+                _ = new FileItem(this, files);
+            }
+            else if (Clipboard.ContainsImage())
+            {
+                Image image = Clipboard.GetImage();
+                _ = new ImageItem(this, image);
+            }
+            else if (Clipboard.ContainsAudio())
+            {
+                Stream audio = Clipboard.GetAudioStream();
+                _ = new AudioItem(this, audio);
+            }
+            else
+            {
+                IDataObject data = Clipboard.GetDataObject();
+                _ = new CustomItem(this, data);
+            }
+        }
+
         private void MainWindow_DragEnter(object sender, DragEventArgs e)
         {
             // accept text and files
@@ -41,21 +74,21 @@ namespace MultiPaste
             switch (e.KeyCode)
             {
                 case Keys.Up:
-                    this.Clipboard.OnKeyUp(e);
+                    this.OnArrowKeyUp(e);
                     break;
 
                 case Keys.Down:
-                    this.Clipboard.OnKeyDown(e);
+                    this.OnArrowKeyDown(e);
                     break;
 
                 case Keys.Enter:
                     // copy selected item to the Windows clipboard
-                    this.Clipboard.Copy();
+                    LocalClipboard.Copy();
                     break;
 
                 case Keys.C:
                     // copy selected item to clipboard on ctrl + c
-                    if (e.Control) this.Clipboard.Copy();
+                    if (e.Control) LocalClipboard.Copy();
                     break;
 
                 case Keys.Delete:
@@ -80,16 +113,16 @@ namespace MultiPaste
         private void ListBox_DoubleClick(object sender, EventArgs e)
         {
             // copy selected item to the Windows clipboard
-            this.Clipboard.Copy();
+            LocalClipboard.Copy();
         }
 
         private void RemoveBtn_Click(object sender, EventArgs e)
         {
             // set focus back to the local clipboard
-            this.Clipboard.Focus();
+            LocalClipboard.Focus();
 
             // remove the current index of the local clipboard
-            this.Clipboard.Remove();
+            LocalClipboard.Remove();
         }
 
         private void NotifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -110,62 +143,87 @@ namespace MultiPaste
 
         private void ClearItem_Click(object sender, EventArgs e)
         {
-            this.Clipboard.Clear();
+            LocalClipboard.Clear();
+        }
+
+        /// <summary>
+        /// This method restricts the type of items that are displayed on
+        /// the visual clipboard.
+        /// </summary>
+        private void RestrictTypes()
+        {
+            // first, clear the visual part of the local clipboard
+            ListBox.ObjectCollection myItems = this.listBox.Items;
+            myItems.Clear();
+
+            // add each item back to the listbox if its type is allowed
+            bool allowType;
+            foreach (string key in LocalClipboard.Keys)
+            {
+                allowType = (this.showTextItem.Checked && LocalClipboard.Dict[key].Type == ClipboardItem.TypeEnum.Text)
+                    || (this.showFilesItem.Checked && LocalClipboard.Dict[key].Type == ClipboardItem.TypeEnum.FileDropList)
+                    || (this.showImagesItem.Checked && LocalClipboard.Dict[key].Type == ClipboardItem.TypeEnum.Image)
+                    || (this.showAudioItem.Checked && LocalClipboard.Dict[key].Type == ClipboardItem.TypeEnum.Audio)
+                    || (this.showCustomItem.Checked && LocalClipboard.Dict[key].Type == ClipboardItem.TypeEnum.Custom);
+
+                // if type is allowed, add to the listbox
+                if (allowType) myItems.Add(key);
+            }
         }
 
         private void ShowTextItem_Click(object sender, EventArgs e)
         {
-            this.Clipboard.RestrictTypes();
+            this.RestrictTypes();
 
             // notify the user of the change
             if (showTextItem.Checked)
-                this.MsgLabel.Normal("Text items displayed!");
+                MsgLabel.Normal("Text items displayed!");
             else
-                this.MsgLabel.Normal("Text items hidden!");
+                MsgLabel.Normal("Text items hidden!");
         }
 
         private void ShowFilesItem_Click(object sender, EventArgs e)
         {
-            this.Clipboard.RestrictTypes();
+            this.RestrictTypes();
 
             // notify the user of the change
             if (showFilesItem.Checked)
-                this.MsgLabel.Normal("File items displayed!");
+                MsgLabel.Normal("File items displayed!");
             else
-                this.MsgLabel.Normal("File items hidden!");
+                MsgLabel.Normal("File items hidden!");
         }
 
         private void ShowImagesItem_Click(object sender, EventArgs e)
         {
-            this.Clipboard.RestrictTypes();
+            this.RestrictTypes();
 
             // notify the user of the change
             if (showImagesItem.Checked)
-                this.MsgLabel.Normal("Image items displayed!");
+                MsgLabel.Normal("Image items displayed!");
             else
-                this.MsgLabel.Normal("Image items hidden!");
+                MsgLabel.Normal("Image items hidden!");
         }
 
         private void ShowAudioItem_Click(object sender, EventArgs e)
         {
-            this.Clipboard.RestrictTypes();
+            this.RestrictTypes();
 
             // notify the user of the change
             if (showAudioItem.Checked)
-                this.MsgLabel.Normal("Audio items displayed!");
+                MsgLabel.Normal("Audio items displayed!");
             else
-                this.MsgLabel.Normal("Audio items hidden!");
+                MsgLabel.Normal("Audio items hidden!");
         }
 
         private void ShowCustomItem_Click(object sender, EventArgs e)
         {
-            this.Clipboard.RestrictTypes();
+            this.RestrictTypes();
 
             // notify the user of the change
             if (showCustomItem.Checked)
-                this.MsgLabel.Normal("Custom items displayed!");
+                MsgLabel.Normal("Custom items displayed!");
             else
-                this.MsgLabel.Normal("Custom items hidden!");
+                MsgLabel.Normal("Custom items hidden!");
         }
 
         private void ExitItem_Click(object sender, EventArgs e)
@@ -210,37 +268,37 @@ namespace MultiPaste
         private void WinStartupItem_Click(object sender, EventArgs e)
         {
             // update Windows startup process
-            this.Config.WinStartupRegistry();
+            Config.WinStartupRegistry();
 
             // update CONFIG file
-            this.Config.UpdateFile();
+            Config.UpdateFile();
         }
 
         private void WrapKeysItem_Click(object sender, EventArgs e)
         {
             // update CONFIG file
-            this.Config.UpdateFile();
+            Config.UpdateFile();
         }
 
         private void MoveToCopiedItem_Click(object sender, EventArgs e)
         {
             // update CONFIG file
-            this.Config.UpdateFile();
+            Config.UpdateFile();
         }
 
         private void ChangeTopBottomItem_Click(object sender, EventArgs e)
         {
             // update CONFIG file
-            this.Config.UpdateFile();
+            Config.UpdateFile();
         }
 
         private void ColorThemeBox_DropDownClosed(object sender, EventArgs e)
         {
             // update color theme of MultiPaste
-            this.Config.ChangeTheme();
+            Config.ChangeTheme();
 
             // update CONFIG file
-            this.Config.UpdateFile();
+            Config.UpdateFile();
 
             // change font color of the config drop down if needed
             this.RootToolStripMenuItem_DropDownOpening(this.configDropDown, null);
@@ -249,15 +307,15 @@ namespace MultiPaste
         private void DefaultConfigItem_Click(object sender, EventArgs e)
         {
             // load default config
-            this.Config.LoadDefaults();
+            Config.LoadDefaults();
 
-            this.MsgLabel.Normal("Default config loaded!");
+            MsgLabel.Normal("Default config loaded!");
         }
 
         private void HelpItem_Click(object sender, EventArgs e)
         {
             // notify the user that we're attempting to open the help file
-            this.MsgLabel.Normal("Opening help.txt...");
+            MsgLabel.Normal("Opening help.txt...");
 
             // create or open help.txt and overwrite its contents
             File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "help.txt"),
@@ -287,7 +345,169 @@ namespace MultiPaste
             Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "help.txt"));
 
             // notify the user of the successful operation for 3 seconds
-            this.MsgLabel.Normal("help.txt is open!");
+            MsgLabel.Normal("help.txt is open!");
+        }
+
+        private void OnArrowKeyUp(KeyEventArgs e)
+        {
+            // vars regarding listbox data
+            int total = this.listBox.Items.Count;
+            int current = this.listBox.SelectedIndex;
+
+            // base case 1: nothing in the clipboard
+            if (total == 0) return;
+
+            // base case 2: no item is selected, or only one item exists
+            if (current < 0 || total == 1)
+            {
+                this.listBox.SelectedIndex = 0;
+                return;
+            }
+
+            // store the item at current index
+            ClipboardItem clipboardItem = LocalClipboard.Dict[LocalClipboard.Keys[current]];
+
+            // store new index for the item and/or index to be moved
+            int newIndex;
+
+            // base case 3: current index is 0
+            if (current == 0)
+            {
+                // if box isn't checked, no wrapping or moving is needed
+                if (!this.wrapKeysItem.Checked)
+                    return;
+
+                // we will be wrapping to the bottom, so newIndex is set to the bottom index
+                newIndex = total - 1;
+
+                // move current item to the bottom index if shift is pressed
+                if (e.Shift)
+                {
+                    LocalClipboard.Move(clipboardItem.KeyText, clipboardItem, newIndex);
+
+                    // wrap selected index to the bottom index only if the box is checked
+                    if (this.ChangeTopBottom.Checked)
+                        this.listBox.SelectedIndex = newIndex;
+                    else
+                        this.listBox.SelectedIndex = current;
+                }
+                // else don't move the current item, and wrap the selected index unconditionally
+                else
+                    this.listBox.SelectedIndex = newIndex;
+
+                return;
+            }
+
+            // store whether the selected index should be changed
+            bool changeIndex = true;
+
+            // if ctrl is being pressed, set newIndex to the top index, i.e. 0
+            if (e.Control)
+            {
+                newIndex = 0;
+
+                // selected index should be unchanged if we're moving an item 
+                // to the top/bottom, but the box is unchecked
+                if (e.Shift && !this.ChangeTopBottom.Checked)
+                    changeIndex = false;
+            }
+            // else set newIndex to current - 1
+            else
+            {
+                newIndex = current - 1;
+                // changeIndex is unconditionally true if ctrl isn't being pressed
+            }
+
+            // move item to new index if shift is pressed
+            if (e.Shift)
+                LocalClipboard.Move(clipboardItem.KeyText, clipboardItem, newIndex);
+
+            // move selected index to new index if bool is satisfied
+            if (changeIndex)
+                this.listBox.SelectedIndex = newIndex;
+            else
+                this.listBox.SelectedIndex = current;
+        }
+
+        private void OnArrowKeyDown(KeyEventArgs e)
+        {
+            // vars regarding listbox data
+            int total = this.listBox.Items.Count;
+            int current = this.listBox.SelectedIndex;
+
+            // base case 1: nothing in the clipboard
+            if (total == 0) return;
+
+            // base case 2: no item is selected, or only one item exists
+            if (current < 0 || total == 1)
+            {
+                this.listBox.SelectedIndex = 0;
+                return;
+            }
+
+            // store the item at current index
+            ClipboardItem clipboardItem = LocalClipboard.Dict[LocalClipboard.Keys[current]];
+
+            // store new index for the item and/or index to be moved
+            int newIndex;
+
+            // base case 3: current is at the last index
+            if (current == total - 1)
+            {
+                // if box isn't checked, no wrapping or moving is needed
+                if (!this.wrapKeysItem.Checked)
+                    return;
+
+                // we will be wrapping to the top, so newIndex is set to the top index, i.e. 0
+                newIndex = 0;
+
+                // move current item to the top index if shift is pressed
+                if (e.Shift)
+                {
+                    LocalClipboard.Move(clipboardItem.KeyText, clipboardItem, newIndex);
+
+                    // wrap selected index to the top index only if the box is checked
+                    if (this.ChangeTopBottom.Checked)
+                        this.listBox.SelectedIndex = newIndex;
+                    else
+                        this.listBox.SelectedIndex = current;
+                }
+                // else don't move the current item, and wrap the selected index unconditionally
+                else
+                    this.listBox.SelectedIndex = newIndex;
+
+                return;
+            }
+
+            // store whether the selected index should be changed
+            bool changeIndex = true;
+
+            // if ctrl is being pressed, set newIndex to the bottom index
+            if (e.Control)
+            {
+                newIndex = total - 1;
+
+                // selected index should be unchanged if we're moving an item 
+                // to the top/bottom, but the box is unchecked
+                if (e.Shift && !this.ChangeTopBottom.Checked)
+                    changeIndex = false;
+            }
+            // else set newIndex to current + 1
+            else
+            {
+                newIndex = current + 1;
+                // changeIndex is unconditionally true if ctrl isn't being pressed
+            }
+
+            // move item to new index if shift is pressed
+            if (e.Shift)
+                LocalClipboard.Move(clipboardItem.KeyText, clipboardItem, newIndex);
+
+            // move selected index to new index if bool is satisfied
+            if (changeIndex)
+                this.listBox.SelectedIndex = newIndex;
+            else
+                this.listBox.SelectedIndex = current;
         }
     }
 }

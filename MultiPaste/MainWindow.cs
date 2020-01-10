@@ -17,23 +17,19 @@ namespace MultiPaste
             // required method for Designer support
             this.InitializeComponent();
 
-            // init myConfig, used for user config information
-            this.Config = new Config(this);
+            // hand this instance to the static classes that utilize MainWindow
+            MsgLabel.MainWindow = this;
+            Config.MainWindow = this;
+            LocalClipboard.MainWindow = this;
 
             // read from CONFIG file and update items accordingly
-            this.Config.FromFile();
-
-            // init myClipboard, the driver of the clipboard history function
-            this.Clipboard = new LocalClipboard(this);
+            Config.FromFile();
 
             // read from CLIPBOARD file and write to local clipboard
-            this.Clipboard.FromFile();
+            LocalClipboard.FromFile();
 
-            // init msgLabel, used for messaging the user
-            this.MsgLabel = new MsgLabel(this);
-
-            // initialize custom event hook that will handle clipboard changes and keyboard input
-            this.EventHook = new GlobalEventHook(this);
+            // lastly, init WndProc event hook
+            _ = new GlobalEventHook(this);
         }
 
         /// <summary>
@@ -113,74 +109,54 @@ namespace MultiPaste
             get { return this.changeTopBottomItem; }
         }
 
-        /// <summary>
-        /// menu item that determines whether to show/hide text items in the listbox
-        /// 
-        /// default is checked
-        /// </summary>
-        public ToolStripMenuItem ShowText
-        {
-            get { return this.showTextItem; }
-        }
+        ///// <summary>
+        ///// menu item that determines whether to show/hide text items in the listbox
+        ///// 
+        ///// default is checked
+        ///// </summary>
+        //public ToolStripMenuItem ShowText
+        //{
+        //    get { return this.showTextItem; }
+        //}
 
-        /// <summary>
-        /// menu item that determines whether to show/hide file items in the listbox
-        /// 
-        /// default is checked
-        /// </summary>
-        public ToolStripMenuItem ShowFiles
-        {
-            get { return this.showTextItem; }
-        }
+        ///// <summary>
+        ///// menu item that determines whether to show/hide file items in the listbox
+        ///// 
+        ///// default is checked
+        ///// </summary>
+        //public ToolStripMenuItem ShowFiles
+        //{
+        //    get { return this.showFilesItem; }
+        //}
 
-        /// <summary>
-        /// menu item that determines whether to show/hide image items in the listbox
-        /// 
-        /// default is checked
-        /// </summary>
-        public ToolStripMenuItem ShowImages
-        {
-            get { return this.showTextItem; }
-        }
+        ///// <summary>
+        ///// menu item that determines whether to show/hide image items in the listbox
+        ///// 
+        ///// default is checked
+        ///// </summary>
+        //public ToolStripMenuItem ShowImages
+        //{
+        //    get { return this.showImagesItem; }
+        //}
 
-        /// <summary>
-        /// menu item that determines whether to show/hide audio items in the listbox
-        /// 
-        /// default is checked
-        /// </summary>
-        public ToolStripMenuItem ShowAudio
-        {
-            get { return this.showTextItem; }
-        }
+        ///// <summary>
+        ///// menu item that determines whether to show/hide audio items in the listbox
+        ///// 
+        ///// default is checked
+        ///// </summary>
+        //public ToolStripMenuItem ShowAudio
+        //{
+        //    get { return this.showAudioItem; }
+        //}
 
-        /// <summary>
-        /// menu item that determines whether to show/hide custom items in the listbox
-        /// 
-        /// default is checked
-        /// </summary>
-        public ToolStripMenuItem ShowCustom
-        {
-            get { return this.showTextItem; }
-        }
-
-        /// <summary>
-        /// controls user config information
-        /// </summary>
-        public Config Config { get; }
-
-        /// <summary>
-        /// the driver of the clipboard history function
-        /// </summary>
-        public LocalClipboard Clipboard { get; }
-
-        /// <summary>
-        /// custom label that messages the user via Label and Timer
-        /// </summary>
-        public MsgLabel MsgLabel { get; }
-
-        /// <summary>
-        /// WndProc event hook to detect clipboard changes and user input
-        /// </summary>
-        public GlobalEventHook EventHook { get; }
+        ///// <summary>
+        ///// menu item that determines whether to show/hide custom items in the listbox
+        ///// 
+        ///// default is checked
+        ///// </summary>
+        //public ToolStripMenuItem ShowCustom
+        //{
+        //    get { return this.showCustomItem; }
+        //}
     }
 }
