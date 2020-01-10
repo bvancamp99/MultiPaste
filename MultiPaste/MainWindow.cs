@@ -12,10 +12,15 @@ namespace MultiPaste
 {
     partial class MainWindow : Form
     {
+        private const string SEARCH_DEFAULT = "Search for an item..."; // store searchTextBox's default text
+
         public MainWindow()
         {
             // required method for Designer support
             this.InitializeComponent();
+
+            //// store searchTextBox's default text
+            //this.searchDefault = this.searchTextBox.Text;
 
             // hand this instance to the static classes that utilize MainWindow
             MsgLabel.MainWindow = this;

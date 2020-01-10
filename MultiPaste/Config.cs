@@ -176,6 +176,10 @@ namespace MultiPaste
                 {
                     control.BackColor = myTheme.Cards.GetColor();
                 }
+                else if (control is TextBox)
+                {
+                    control.BackColor = myTheme.Cards.GetColor();
+                }
 
                 // set font color
                 control.ForeColor = myTheme.Font.GetColor();
@@ -188,11 +192,11 @@ namespace MultiPaste
             MainWindow.ColorTheme colorTheme = (MainWindow.ColorTheme)Config.MainWindow.ColorThemeBox.SelectedIndex;
             switch (colorTheme)
             {
-                case MultiPaste.MainWindow.ColorTheme.Light:
+                case MainWindow.ColorTheme.Light:
                     Config.ChangeTheme(Themes.Light);
                     break;
 
-                case MultiPaste.MainWindow.ColorTheme.Dark:
+                case MainWindow.ColorTheme.Dark:
                     Config.ChangeTheme(Themes.Dark);
                     break;
             }

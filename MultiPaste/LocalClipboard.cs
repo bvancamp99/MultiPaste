@@ -88,6 +88,59 @@ namespace MultiPaste
         /// </summary>
         public static DirectoryInfo CustomFolder { get; }
 
+
+        /// <summary>
+        /// BackupClipboard with the clipboard file contents as a parameter
+        /// 
+        /// This method is used if the caller already has the clipboard file
+        /// contents saved as a string.
+        /// </summary>
+        /// <param name="clipboardString">contents of the clipboard file</param>
+        private static void BackupClipboard(string clipboardString)
+        {
+            // backup file contents = clipboardString
+            using (StreamWriter sw = LocalClipboard.BackupFile.CreateText())
+            {
+                sw.Write(clipboardString);
+            }
+        }
+
+        /// <summary>
+        /// This method writes the current contents of the clipboard file to
+        /// the backup file.
+        /// 
+        /// This is used when clearing the local clipboard and when reading
+        /// from the clipboard file on program startup.
+        /// </summary>
+        private static void BackupClipboard()
+        {
+            // if CLIPBOARD file is missing or empty
+            if (!LocalClipboard.ClipboardFile.Exists || LocalClipboard.ClipboardFile.Length == 0)
+                return;
+
+            // first, get contents of the clipboard file
+            string clipboardString = LocalClipboard.GetClipboard();
+
+            // call helper with clipboardString as an arg
+            LocalClipboard.BackupClipboard(clipboardString);
+        }
+
+        /// <summary>
+        /// This method is used to get the contents of the clipboard file.
+        /// </summary>
+        /// <returns>contents of the clipboard file as a string</returns>
+        private static string GetClipboard()
+        {
+            // clipboardString = current contents of the CLIPBOARD file
+            string clipboardString;
+            using (StreamReader sr = LocalClipboard.ClipboardFile.OpenText())
+            {
+                clipboardString = sr.ReadToEnd();
+            }
+
+            return clipboardString;
+        }
+
         public static void Focus()
         {
             LocalClipboard.MainWindow.ListBox.Focus();
@@ -248,7 +301,8 @@ namespace MultiPaste
                 return;
 
             // remove the item at the index
-            ClipboardItem clipboardItem = LocalClipboard.Dict[LocalClipboard.Keys[index]];
+            string key = (string)MainWindow.ListBox.Items[index];
+            ClipboardItem clipboardItem = LocalClipboard.Dict[key];
             LocalClipboard.Remove(clipboardItem.KeyText, clipboardItem);
 
             // if there was an item located after the removed item, select that item
@@ -308,6 +362,9 @@ namespace MultiPaste
         /// </summary>
         public static void Clear()
         {
+            // first, write the current clipboard contents to the backup file
+            LocalClipboard.BackupClipboard();
+
             // clear each data structure associated with the local clipboard
             LocalClipboard.MainWindow.ListBox.Items.Clear();
             LocalClipboard.Keys.Clear();
@@ -449,18 +506,11 @@ namespace MultiPaste
             if (!LocalClipboard.ClipboardFile.Exists || LocalClipboard.ClipboardFile.Length == 0)
                 return;
 
-            // clipboardString = old contents of the CLIPBOARD file
-            string clipboardString;
-            using (StreamReader sr = LocalClipboard.ClipboardFile.OpenText())
-            {
-                clipboardString = sr.ReadToEnd();
-            }
+            // store the current contents of the clipboard file
+            string clipboardString = LocalClipboard.GetClipboard();
 
-            // backup file contents = clipboardString
-            using (StreamWriter sw = LocalClipboard.BackupFile.CreateText())
-            {
-                sw.Write(clipboardString);
-            }
+            // update the backup file with clipboardString
+            LocalClipboard.BackupClipboard(clipboardString);
 
             // traverse clipboardString via StringReader
             using (StringReader strRead = new StringReader(clipboardString))

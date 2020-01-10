@@ -107,13 +107,104 @@ namespace MultiPaste
                     break;
             }
 
-            e.Handled = true; // stop event handling chain
+            // stop event handling chain
+            e.Handled = true;
+        }
+
+        private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // minimize the form if user clicked the X button
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true; // cancel exiting prog
+                this.Visible = false; // hide the form
+            }
         }
 
         private void ListBox_DoubleClick(object sender, EventArgs e)
         {
             // copy selected item to the Windows clipboard
             LocalClipboard.Copy();
+        }
+
+        private void SearchTextBox_Enter(object sender, EventArgs e)
+        {
+            // if searchTextBox's current text is the default
+            if (this.searchTextBox.Text == MainWindow.SEARCH_DEFAULT)
+            {
+                // clear searchTextBox's text
+                this.searchTextBox.Text = string.Empty;
+            }
+        }
+
+        private void SearchTextBox_Leave(object sender, EventArgs e)
+        {
+            // if searchTextBox's current text is empty
+            if (this.searchTextBox.Text == string.Empty)
+            {
+                // set to default text
+                this.searchTextBox.Text = MainWindow.SEARCH_DEFAULT;
+            }
+        }
+
+        /// <summary>
+        /// This method restricts the items that are displayed on
+        /// the visual clipboard by comparing them to a keyword.
+        /// </summary>
+        /// <param name="keyword">current string in this.searchTextBox</param>
+        private void RestrictKeys(string keyword)
+        {
+            // first, clear the visual part of the local clipboard
+            ListBox.ObjectCollection myItems = this.listBox.Items;
+            myItems.Clear();
+
+            // traverse the keys in the local clipboard
+            foreach (string key in LocalClipboard.Keys)
+            {
+                // if the item's key contains the keyword
+                if (key.Contains(keyword))
+                {
+                    // add item back to the visual clipboard
+                    myItems.Add(key);
+                }
+            }
+        }
+
+        /// <summary>
+        /// This method allows all items to be displayed on the visual
+        /// clipboard.
+        /// </summary>
+        private void AllowKeys()
+        {
+            // nothing to do if all items are already being displayed
+            if (this.listBox.Items.Count == LocalClipboard.Keys.Count)
+                return;
+            
+            // first, clear the visual part of the local clipboard
+            ListBox.ObjectCollection myItems = this.listBox.Items;
+            myItems.Clear();
+
+            // traverse the keys in the local clipboard
+            foreach (string key in LocalClipboard.Keys)
+            {
+                // add each item back to the visual clipboard
+                myItems.Add(key);
+            }
+        }
+
+        private void SearchTextBox_TextChanged(object sender, EventArgs e)
+        {
+            // show all items if text is empty or the default
+            if (this.searchTextBox.Text == MainWindow.SEARCH_DEFAULT ||
+                this.searchTextBox.Text == string.Empty)
+            {
+                this.AllowKeys();
+            }
+            // else restrict keys displayed based on search query
+            else
+            {
+                this.RestrictKeys(this.searchTextBox.Text);
+            }
         }
 
         private void RemoveBtn_Click(object sender, EventArgs e)
@@ -129,16 +220,6 @@ namespace MultiPaste
         {
             // display MainWindow when system tray icon is double-clicked
             this.Visible = true;
-        }
-
-        private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            // minimize the form if user clicked the X button
-            if (e.CloseReason == CloseReason.UserClosing)
-            {
-                e.Cancel = true; // cancel exiting prog
-                this.Visible = false; // hide the form
-            }
         }
 
         private void ClearItem_Click(object sender, EventArgs e)
