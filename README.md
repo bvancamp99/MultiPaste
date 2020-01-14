@@ -14,7 +14,6 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Working on </h3>
 <ul>
-  <li>Config option for setting MainWindow's visible property to true/false on startup.  Default would be true.</li>
   <li>Ability to pin items to the top.  This would require us to modify the add methods in LocalClipboard to insert at index 0 + numPinnedItems, rather than 0 unconditionally.</li>
   <li>We could remove the window frame and implement our own custom "frame", with X button et al.  This would be a great way to circumvent the problem of setting the frame's color, and also we can have a more custom look to the top.</li>
   <li>Option to edit items.  This feature could be offered via separate menu items in the Other Options dropdown, e.g. "Edit text item" or "Edit file item."  Although it might be better just to have one menu item and/or one button for editing, and the window that pops up is dynamically determined based on the type of ClipboardItem.  This would mean we need to make separate forms for each ClipboardItem type, so at most 5 (could be less if we can conflate, say, forms for the items that use a file system).</li>
