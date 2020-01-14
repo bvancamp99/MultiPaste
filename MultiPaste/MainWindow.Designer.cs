@@ -37,6 +37,7 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitItem = new System.Windows.Forms.ToolStripMenuItem();
             this.configDropDown = new System.Windows.Forms.ToolStripMenuItem();
+            this.startMinimizedItem = new System.Windows.Forms.ToolStripMenuItem();
             this.winStartupItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wrapKeysItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveToCopiedItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -122,6 +123,7 @@
             // configDropDown
             // 
             this.configDropDown.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.startMinimizedItem,
             this.winStartupItem,
             this.wrapKeysItem,
             this.moveToCopiedItem,
@@ -135,6 +137,14 @@
             this.configDropDown.Text = "Config";
             this.configDropDown.DropDownClosed += new System.EventHandler(this.RootToolStripMenuItem_DropDownClosed);
             this.configDropDown.DropDownOpening += new System.EventHandler(this.RootToolStripMenuItem_DropDownOpening);
+            // 
+            // startMinimizedItem
+            // 
+            this.startMinimizedItem.CheckOnClick = true;
+            this.startMinimizedItem.Name = "startMinimizedItem";
+            this.startMinimizedItem.Size = new System.Drawing.Size(331, 22);
+            this.startMinimizedItem.Text = "Start Minimized";
+            this.startMinimizedItem.Click += new System.EventHandler(this.StartMinimizedItem_Click);
             // 
             // winStartupItem
             // 
@@ -371,6 +381,7 @@
             this.Name = "MainWindow";
             this.Text = "MultiPaste";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainWindow_FormClosing);
+            this.Shown += new System.EventHandler(this.MainWindow_Shown);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainWindow_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainWindow_DragEnter);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainWindow_KeyDown);
@@ -414,6 +425,7 @@
         private System.Windows.Forms.ToolStripComboBox colorThemeBox;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.TextBox searchTextBox;
+        private System.Windows.Forms.ToolStripMenuItem startMinimizedItem;
     }
 }
 

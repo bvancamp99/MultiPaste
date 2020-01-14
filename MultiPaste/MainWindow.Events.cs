@@ -45,6 +45,17 @@ namespace MultiPaste
             }
         }
 
+        /// <summary>
+        /// The Shown event is triggered when the form is first shown.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MainWindow_Shown(object sender, EventArgs e)
+        {
+            // start MultiPaste shown/minimized based on this.startMinimizedItem
+            this.Visible = !this.startMinimizedItem.Checked;
+        }
+
         private void MainWindow_DragEnter(object sender, DragEventArgs e)
         {
             // accept text and files
@@ -344,6 +355,12 @@ namespace MultiPaste
                     myItem.ForeColor = Themes.Dark.Font.GetColor();
                 }
             }
+        }
+
+        private void StartMinimizedItem_Click(object sender, EventArgs e)
+        {
+            // update CONFIG file
+            Config.UpdateFile();
         }
 
         private void WinStartupItem_Click(object sender, EventArgs e)

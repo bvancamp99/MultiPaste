@@ -16,7 +16,12 @@ namespace MultiPaste
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainWindow());
+
+            // init MultiPaste instance
+            MainWindow mainWindow = new MainWindow();
+
+            // run MultiPaste
+            Application.Run(mainWindow);
         }
     }
 }

@@ -19,9 +19,6 @@ namespace MultiPaste
             // required method for Designer support
             this.InitializeComponent();
 
-            //// store searchTextBox's default text
-            //this.searchDefault = this.searchTextBox.Text;
-
             // hand this instance to the static classes that utilize MainWindow
             MsgLabel.MainWindow = this;
             Config.MainWindow = this;
@@ -33,7 +30,7 @@ namespace MultiPaste
             // read from CLIPBOARD file and write to local clipboard
             LocalClipboard.FromFile();
 
-            // lastly, init WndProc event hook
+            // init WndProc event hook
             _ = new GlobalEventHook(this);
         }
 
@@ -68,6 +65,16 @@ namespace MultiPaste
         public Label Label
         {
             get { return this.notifLabel; }
+        }
+
+        /// <summary>
+        /// menu item that determines whether to start MultiPaste minimized
+        /// 
+        /// default is unchecked
+        /// </summary>
+        public ToolStripMenuItem StartMinimized
+        {
+            get { return this.startMinimizedItem; }
         }
 
         /// <summary>

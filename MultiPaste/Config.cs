@@ -16,7 +16,7 @@ namespace MultiPaste
     /// </summary>
     static class Config
     {
-        private const int CONFIG_SIZE = 5; // num bytes that a valid CONFIG file would be; depends on number of config settings
+        private const int CONFIG_SIZE = 6; // num bytes that a valid CONFIG file would be; depends on number of config settings
 
         private static readonly FileInfo configFile; // config file directory and other info
 
@@ -55,6 +55,7 @@ namespace MultiPaste
                 if (fs.Length == Config.CONFIG_SIZE)
                 {
                     // read bytes and assign to the appropriate properties
+                    Config.MainWindow.StartMinimized.Checked = Convert.ToBoolean(fs.ReadByte());
                     Config.MainWindow.WinStartup.Checked = Convert.ToBoolean(fs.ReadByte());
                     Config.MainWindow.WrapKeys.Checked = Convert.ToBoolean(fs.ReadByte());
                     Config.MainWindow.MoveToCopied.Checked = Convert.ToBoolean(fs.ReadByte());
@@ -88,6 +89,7 @@ namespace MultiPaste
         private static void UpdateFile(FileStream fs)
         {
             // write applicable bools to file
+            fs.WriteByte(Convert.ToByte(Config.MainWindow.StartMinimized.Checked));
             fs.WriteByte(Convert.ToByte(Config.MainWindow.WinStartup.Checked));
             fs.WriteByte(Convert.ToByte(Config.MainWindow.WrapKeys.Checked));
             fs.WriteByte(Convert.ToByte(Config.MainWindow.MoveToCopied.Checked));
@@ -117,6 +119,7 @@ namespace MultiPaste
         private static void LoadDefaults(FileStream fs)
         {
             // set to default values
+            Config.MainWindow.StartMinimized.Checked = false;
             Config.MainWindow.WinStartup.Checked = true;
             Config.MainWindow.WrapKeys.Checked = false;
             Config.MainWindow.MoveToCopied.Checked = true;
