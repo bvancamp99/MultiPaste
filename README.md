@@ -31,6 +31,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 <h3> Improve </h3>
 <ul>
   <li>Gray out edit option unless selected item is text item</li>
+  <li>Could perhaps show only a small portion of items at a time and display more when scrolling down.  Could help with throughput and a clean/simple look.</li>
   <li>Might want another string collection in LocalClipboard to store all keys currently displayed on the visual clipboard</li>
   <li>Lots of redundant code in ClipboardItem's children classes; conflate if possible and/or make abstract methods</li>
   <li>Make abstract parent class for ImageItem, AudioItem, and CustomItem.  It would contain a "MyFile" FileInfo property, as well as some operations in the constructor.</li>
@@ -49,6 +50,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Add </h3>
 <ul>
+  <li>Change ListBox.SelectionMode to allow selecting multiple items</li>
   <li>In "Other Options", add checkbox for textbox search being case-sensitive.</li>
   <li>Add options to open items from file.  This would be 1) a good feature and 2) finally a way to test AudioItem!  Only allow text files for text items, any file for file items, image files for image items, and audio files for audio items</li>
   <li>Maybe make MultiPaste slightly translucent?  Like ~90% opacity?</li>
