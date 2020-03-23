@@ -463,7 +463,7 @@ namespace MultiPaste
             }
 
             // store the item at current index
-            ClipboardItem clipboardItem = LocalClipboard.Dict[LocalClipboard.Keys[current]];
+            ClipboardItem clipboardItem = LocalClipboard.Dict[(string)listBox.Items[current]];
 
             // store new index for the item and/or index to be moved
             int newIndex;
@@ -527,6 +527,33 @@ namespace MultiPaste
                 this.listBox.SelectedIndex = current;
         }
 
+        private void EditTextItem_Click(object sender, EventArgs e)
+        {
+            // check for valid SelectedIndex val before continuing
+            if (listBox.SelectedIndex < 0)
+                return;
+
+            // check for TextItem
+            var oitem = LocalClipboard.Dict[(string)listBox.SelectedItem];
+            if (oitem.Type != ClipboardItem.TypeEnum.Text) return;
+
+            // get new text
+            string otext = ((TextItem)oitem).Text;
+            var wnd = new PopupWindow(otext);
+            string ntext = wnd.ShowDialog();
+
+            // edit item if text is valid
+            if (ntext == null) return;
+            else
+            {
+                int i = listBox.SelectedIndex;
+                LocalClipboard.Remove(i);
+
+                var nitem = new TextItem(this, ntext);
+                LocalClipboard.Move(nitem.KeyText, nitem, i);
+            }
+        }
+
         private void OnArrowKeyDown(KeyEventArgs e)
         {
             // vars regarding listbox data
@@ -544,7 +571,7 @@ namespace MultiPaste
             }
 
             // store the item at current index
-            ClipboardItem clipboardItem = LocalClipboard.Dict[LocalClipboard.Keys[current]];
+            ClipboardItem clipboardItem = LocalClipboard.Dict[(string)listBox.Items[current]];
 
             // store new index for the item and/or index to be moved
             int newIndex;

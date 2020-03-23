@@ -347,11 +347,42 @@ namespace MultiPaste
             }
         }
 
+        /// <summary>
+        /// Moves item to new index
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="index"></param>
         public static void Move(string key, ClipboardItem value, int index)
         {
             LocalClipboard.Remove(key, value);
             LocalClipboard.Insert(key, value, index);
         }
+
+        //public static void Rename(string okey, string nkey)
+        //{
+        //    int i = MainWindow.ListBox.Items.IndexOf(okey);
+        //    var val = Dict[okey];
+
+        //    switch (val.Type)
+        //    {
+        //        case ClipboardItem.TypeEnum.Text:
+
+
+        //            break;
+        //        case ClipboardItem.TypeEnum.FileDropList:
+        //            break;
+        //        case ClipboardItem.TypeEnum.Image:
+        //            break;
+        //        case ClipboardItem.TypeEnum.Audio:
+        //            break;
+        //        case ClipboardItem.TypeEnum.Custom:
+        //            break;
+        //    }
+
+        //    Remove(okey, val);
+        //    Insert(nkey, val, i);
+        //}
 
         /// <summary>
         /// This method clears the structures, files, and folders involved in
@@ -394,7 +425,7 @@ namespace MultiPaste
             LocalClipboard.HandleClipboard = false;
 
             // store the selected item
-            string key = LocalClipboard.Keys[LocalClipboard.MainWindow.ListBox.SelectedIndex];
+            string key = (string)MainWindow.ListBox.SelectedItem;
             ClipboardItem clipboardItem = LocalClipboard.Dict[key];
 
             // store an error msg string that will notify the user if an error occurred
