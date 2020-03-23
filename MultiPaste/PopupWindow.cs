@@ -12,21 +12,22 @@ namespace MultiPaste
 {
     public partial class PopupWindow : Form
     {
-        public string key{ get; set; }
+        public string key{ get; private set; }
 
-        public PopupWindow(string key)
+        public PopupWindow()
         {
             InitializeComponent();
-
-            this.key = key;
         }
 
-        public new string ShowDialog()
+        public string ShowDialog(string key)
         {
-            if (base.ShowDialog() != DialogResult.OK || key == string.Empty)
+            this.key = key;
+            tb1.Text = key;
+
+            if (ShowDialog() != DialogResult.OK || this.key == string.Empty || this.key == key)
                 return null;
             else
-                return key;
+                return this.key;
         }
 
         private void okBtn_Click(object sender, EventArgs e)

@@ -531,16 +531,22 @@ namespace MultiPaste
         {
             // check for valid SelectedIndex val before continuing
             if (listBox.SelectedIndex < 0)
+            {
+                MsgLabel.Normal("No text item is selected!");
                 return;
+            }
 
             // check for TextItem
             var oitem = LocalClipboard.Dict[(string)listBox.SelectedItem];
-            if (oitem.Type != ClipboardItem.TypeEnum.Text) return;
+            if (oitem.Type != ClipboardItem.TypeEnum.Text)
+            {
+                MsgLabel.Normal("Selected item is not a text item!");
+                return;
+            }
 
             // get new text
             string otext = ((TextItem)oitem).Text;
-            var wnd = new PopupWindow(otext);
-            string ntext = wnd.ShowDialog();
+            string ntext = wnd.ShowDialog(otext);
 
             // edit item if text is valid
             if (ntext == null) return;
@@ -551,6 +557,8 @@ namespace MultiPaste
 
                 var nitem = new TextItem(this, ntext);
                 LocalClipboard.Move(nitem.KeyText, nitem, i);
+
+                MsgLabel.Normal("Text item edited!");
             }
         }
 

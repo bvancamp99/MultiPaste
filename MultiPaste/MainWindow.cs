@@ -32,7 +32,11 @@ namespace MultiPaste
 
             // init WndProc event hook
             _ = new GlobalEventHook(this);
+
+            wnd = new PopupWindow();
         }
+
+        public PopupWindow wnd { get; }
 
         /// <summary>
         /// defines the possible color themes for MultiPaste
