@@ -50,6 +50,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Add </h3>
 <ul>
+  <li>Option to add items as a queue or stack (default is stack)</li>
   <li>Change ListBox.SelectionMode to allow selecting multiple items</li>
   <li>In "Other Options", add checkbox for textbox search being case-sensitive.</li>
   <li>Add options to open items from file.  This would be 1) a good feature and 2) finally a way to test AudioItem!  Only allow text files for text items, any file for file items, image files for image items, and audio files for audio items</li>
