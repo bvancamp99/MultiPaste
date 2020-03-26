@@ -50,6 +50,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Add </h3>
 <ul>
+  <li>Global hotkey to copy next item in the listbox</li>
   <li>Option to add items as a queue or stack (default is stack)</li>
   <li>Change ListBox.SelectionMode to allow selecting multiple items</li>
   <li>In "Other Options", add checkbox for textbox search being case-sensitive.</li>
