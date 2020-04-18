@@ -30,6 +30,7 @@ The latest release can be found in the <a href="https://github.com/bvancamp99/Mu
 
 <h3> Improve </h3>
 <ul>
+  <li>What about separating each item into its own file?  Would require more opening of files on e.g. startup but arguably cleaner than current setup.  Would make reading and writing more intuitive.</li>
   <li>Gray out edit option unless selected item is text item</li>
   <li>Could perhaps show only a small portion of items at a time and display more when scrolling down.  Could help with throughput and a clean/simple look.</li>
   <li>Might want another string collection in LocalClipboard to store all keys currently displayed on the visual clipboard</li>
